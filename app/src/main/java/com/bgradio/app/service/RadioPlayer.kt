@@ -76,19 +76,13 @@ class RadioPlayer(
     private val listenerWrappers = HashMap<Player.Listener, Player.Listener>()
 
     override fun addListener(listener: Player.Listener) {
-        val wrapper = MetadataListener(listener)
+        val wrapper = MetadataRewritingListener(this, listener)
         listenerWrappers[listener] = wrapper
         super.addListener(wrapper)
     }
 
     override fun removeListener(listener: Player.Listener) {
         listenerWrappers.remove(listener)?.let { super.removeListener(it) }
-    }
-
-    private inner class MetadataListener(private val delegate: Player.Listener) : Player.Listener by delegate {
-        override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
-            delegate.onMediaMetadataChanged(getMediaMetadata())
-        }
     }
 
     private fun moveBy(delta: Int) {

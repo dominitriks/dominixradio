@@ -21,8 +21,8 @@ android {
         applicationId = "com.bgradio.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.0.0"
+        versionCode = 3
+        versionName = "1.0.1"
     }
 
     signingConfigs {
@@ -60,6 +60,9 @@ android {
         compose = true
         buildConfig = true
     }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
     packaging {
         resources.excludes += "/META-INF/{AL2.0,LGPL2.1}"
     }
@@ -89,6 +92,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.guava)
+
+    testImplementation(libs.junit)
 }
 
 // APK names: Dominix-v<version>-debug.apk / Dominix-v<version>-release.apk
