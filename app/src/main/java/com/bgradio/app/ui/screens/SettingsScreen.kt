@@ -1,0 +1,221 @@
+package com.bgradio.app.ui.screens
+
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.BrightnessAuto
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.LightMode
+import androidx.compose.material.icons.rounded.Numbers
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Wifi
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.bgradio.app.BuildConfig
+import com.bgradio.app.data.model.AppSettings
+import com.bgradio.app.data.model.ThemeMode
+import com.bgradio.app.ui.MainViewModel
+
+@Composable
+fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
+    val settings = vm.settings.collectAsStateWithLifecycle().value ?: AppSettings()
+    val stations by vm.stations.collectAsStateWithLifecycle()
+    var showAbout by rememberSaveable { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .verticalScroll(rememberScrollState())
+            .padding(start = 16.dp, end = 16.dp, bottom = contentPadding.calculateBottomPadding() + 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Text(
+            "Настройки",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 4.dp),
+        )
+
+        SettingsGroup("Външен вид") {
+            ThemeOption("Тъмен режим", Icons.Rounded.DarkMode, settings.themeMode == ThemeMode.DARK) {
+                vm.setThemeMode(ThemeMode.DARK)
+            }
+            ThemeOption("Светъл режим", Icons.Rounded.LightMode, settings.themeMode == ThemeMode.LIGHT) {
+                vm.setThemeMode(ThemeMode.LIGHT)
+            }
+            ThemeOption("Автоматичен режим", Icons.Rounded.BrightnessAuto, settings.themeMode == ThemeMode.SYSTEM) {
+                vm.setThemeMode(ThemeMode.SYSTEM)
+            }
+        }
+
+        SettingsGroup("Възпроизвеждане") {
+            SwitchRow(
+                "Използване само на Wi-Fi",
+                "Радиото няма да пуска през мобилни данни",
+                Icons.Rounded.Wifi,
+                settings.wifiOnly,
+                vm::setWifiOnly,
+            )
+            SwitchRow(
+                "Автоматично възстановяване на stream",
+                "Повторно свързване при прекъсване (до ~4 минути)",
+                Icons.Rounded.Refresh,
+                settings.autoReconnect,
+                vm::setAutoReconnect,
+            )
+        }
+
+        SettingsGroup("Фоново възпроизвеждане") {
+            InfoRow(
+                "Оптимизация на батерията",
+                "Ако телефонът спира радиото при заключен екран, изберете „Без ограничения“ за Dominix",
+                Icons.Rounded.BatteryChargingFull,
+            ) { openBatterySettings(context) }
+        }
+
+        SettingsGroup("Информация") {
+            InfoRow("За приложението", "Dominix · създадено от Dominantus", Icons.Rounded.Info) { showAbout = true }
+            InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)
+        }
+
+        Text(
+            "© 2026 Dominantus · Всички права запазени.",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+        )
+    }
+
+    if (showAbout) {
+        AboutDialog(stationCount = stations.size, onDismiss = { showAbout = false })
+    }
+}
+
+private fun openBatterySettings(context: Context) {
+    val intents = listOf(
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")),
+        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+    )
+    for (intent in intents) {
+        try {
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            return
+        } catch (_: Exception) {
+            // try the next one
+        }
+    }
+}
+
+@Composable
+private fun SettingsGroup(title: String, content: @Composable () -> Unit) {
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+    ) {
+        Column(Modifier.padding(vertical = 8.dp)) {
+            Text(
+                title,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 8.dp),
+            )
+            content()
+        }
+    }
+}
+
+@Composable
+private fun ThemeOption(label: String, icon: ImageVector, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .selectable(selected = selected, onClick = onClick, role = Role.RadioButton)
+            .padding(horizontal = 18.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.width(16.dp))
+        Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+        RadioButton(selected = selected, onClick = null)
+    }
+}
+
+@Composable
+private fun SwitchRow(title: String, subtitle: String, icon: ImageVector, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clickable { onChange(!checked) }
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        Spacer(Modifier.width(8.dp))
+        Switch(checked = checked, onCheckedChange = onChange)
+    }
+}
+
+@Composable
+private fun InfoRow(title: String, value: String, icon: ImageVector, onClick: (() -> Unit)?) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 18.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(24.dp))
+        Spacer(Modifier.width(16.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Spacer(Modifier.height(2.dp))
+            Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}

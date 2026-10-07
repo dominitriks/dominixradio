@@ -1,0 +1,1221 @@
+[
+  {
+    "id": "radio1",
+    "name": "Радио 1",
+    "streamUrl": "http://stream.metacast.eu/radio1128",
+    "fallbackUrls": [
+      "http://play.global.audio/radio1hi.aac",
+      "http://149.13.0.80/radio1128"
+    ],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "radio1rock",
+    "name": "Радио 1 Рок",
+    "streamUrl": "http://play.global.audio/radio1rockhi.aac",
+    "fallbackUrls": [
+      "http://stream.metacast.eu/radio1rock.ogg"
+    ],
+    "genre": "Рок",
+    "city": "София",
+    "logoUrl": "http://www.radio1rock.bg/theme_assets/radio1rock/images/favicon.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "nrj",
+    "name": "Energy (NRJ) България",
+    "streamUrl": "http://play.global.audio/nrj128",
+    "fallbackUrls": [
+      "http://stream.radioreklama.bg/nrj.opus"
+    ],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "https://media.metacast.eu/pictures/10_2015/OdriLYWpbHJqKDAcGCMv-7384.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "nrj90",
+    "name": "Energy 90s Only",
+    "streamUrl": "http://play.global.audio/energy-90s",
+    "fallbackUrls": [
+      "http://play.global.audio/energy-90s.aac"
+    ],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "https://media.metacast.eu/pictures/05_2016/1u3XLwvIqfH9hrgS24iT-12813.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "nrj00",
+    "name": "Energy 00s Only",
+    "streamUrl": "http://play.global.audio/energy-00s.aac",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "https://media.metacast.eu/pictures/02_2023/Aud5WKLJ6ZOzqVThrMmU-84388.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bgradio",
+    "name": "БГ Радио",
+    "streamUrl": "http://stream.radioreklama.bg/bgradio128",
+    "fallbackUrls": [
+      "http://play.global.audio/bgradio128",
+      "http://stream.metacast.eu/bgradio128"
+    ],
+    "genre": "Българска музика",
+    "city": "София",
+    "logoUrl": "http://bgradio.net/theme_assets/bgradio/images/favicon.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "bgestrada",
+    "name": "БГ Естрада",
+    "streamUrl": "http://play.global.audio/bgestrada",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/bgestrada.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "veronika",
+    "name": "Радио Вероника",
+    "streamUrl": "http://play.global.audio/veronikahi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/veronika64",
+      "http://stream.metacast.eu/veronika.ogg"
+    ],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/radioveronika.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "6bez10",
+    "name": "Вероника 6 без 10",
+    "streamUrl": "http://play.global.audio/6bez10hi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/6bez10.aac"
+    ],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "nova",
+    "name": "Радио Nova",
+    "streamUrl": "http://stream.metacast.eu/nova.ogg",
+    "fallbackUrls": [
+      "http://play.global.audio/nova.opus",
+      "https://25453.live.streamtheworld.com/RADIO_NOVAAAC_H.aac"
+    ],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "novanews",
+    "name": "Nova News",
+    "streamUrl": "http://play.global.audio/novanewshi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/novanews.aac"
+    ],
+    "genre": "Новини",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "avtoradio",
+    "name": "Авторадио",
+    "streamUrl": "http://stream80.metacast.eu/avtoradiohi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/avtoradio.opus",
+      "https://playerservices.streamtheworld.com/api/livestream-redirect/AVTORADIOAAC_L.aac"
+    ],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "https://avtoradio.bg/ar_logo.f88b409f.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "city",
+    "name": "Радио City",
+    "streamUrl": "http://play.global.audio/cityhi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/city.opus",
+      "http://play.global.audio/city64"
+    ],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/radiocity.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "cityrnb",
+    "name": "City Hip-Hop & R'n'B",
+    "streamUrl": "http://play.global.audio/cityrabhi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/cityrab.aac"
+    ],
+    "genre": "Други",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/cityrab.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "citylatin",
+    "name": "City Latin",
+    "streamUrl": "http://play.global.audio/citylatinhi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/citylatin.aac"
+    ],
+    "genre": "Други",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/citylatin.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "vanilla",
+    "name": "Радио Vanilla",
+    "streamUrl": "http://play.global.audio/vanillahi.aac",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/vanilla.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "cafe",
+    "name": "Radioplay Cafe",
+    "streamUrl": "http://play.global.audio/cafehi.aac",
+    "fallbackUrls": [],
+    "genre": "Джаз",
+    "city": "София",
+    "logoUrl": "https://www.radioplay.bg/assets/logos/cafe.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "fresh",
+    "name": "Радио Fresh!",
+    "streamUrl": "http://193.108.24.21:8000/fresh",
+    "fallbackUrls": [
+      "http://31.13.223.148:8000/fresh.mp3"
+    ],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "http://1.bp.blogspot.com/_RoR-1v43z1E/TToGkbRBWuI/AAAAAAAAAU0/0VrxqD0ipm8/s1600/radiofresh.jpg",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "fmplus",
+    "name": "Радио FM+",
+    "streamUrl": "http://193.108.24.21:8000/fmplus",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "zrock",
+    "name": "Z-Rock",
+    "streamUrl": "http://193.108.24.6:8000/zrock",
+    "fallbackUrls": [],
+    "genre": "Рок",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "melody",
+    "name": "Радио Melody",
+    "streamUrl": "http://193.108.24.6:8000/melody?file=.mp3",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "https://radiomelody.bg/i/logo.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "tangra",
+    "name": "Tangra Mega Rock",
+    "streamUrl": "http://stream-bg-01.radiotangra.com:8000/Tangra-high",
+    "fallbackUrls": [
+      "http://stream-bg-01.radiotangra.com/Tangra-high.aac"
+    ],
+    "genre": "Рок",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "magicfm",
+    "name": "Magic FM",
+    "streamUrl": "https://bss1.neterra.tv/magicfm/magicfm.m3u8",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "thevoice",
+    "name": "Радио The Voice",
+    "streamUrl": "https://bss1.neterra.tv/thevoicefm/thevoicefm.m3u8",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "vitosha",
+    "name": "Радио Витоша",
+    "streamUrl": "https://bss1.neterra.tv/vitosha/vitosha.m3u8",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "veselina",
+    "name": "Радио Веселина",
+    "streamUrl": "https://bss1.neterra.tv/veselina/veselina.m3u8",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "https://www.radioveselina.bg/resources/assets/images/favicon/apple-touch-icon.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "veselinaretro",
+    "name": "Веселина Ретро",
+    "streamUrl": "https://nova-radio.neterra.tv/veselinaretro",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "https://nbg-img.fite.tv/img/611098_980x551.jpg",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "veselinafolk",
+    "name": "Веселина Фолк",
+    "streamUrl": "https://nova-radio.neterra.tv/veselinafolk",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "magicparty",
+    "name": "Magic Party",
+    "streamUrl": "https://nova-radio.neterra.tv/magicparty",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "kisslounge",
+    "name": "Kiss Lounge",
+    "streamUrl": "https://nova-radio.neterra.tv/kiss",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "София",
+    "logoUrl": "https://play.nova.bg/_next/image?url=https%3A%2F%2Fnbg-img.fite.tv%2Fimg%2F611102_460x260.jpg&w=1080&q=85",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "voiceofbg",
+    "name": "The Voice of Bulgaria",
+    "streamUrl": "https://nova-radio.neterra.tv/voiceofbg",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "btvradio",
+    "name": "bTV Radio",
+    "streamUrl": "https://cdn.bweb.bg/radio/btv-radio.mp3",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "София",
+    "logoUrl": "https://btvradio.bg/static/bg/microsites/btv/img/favicon.ico",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "jazzfm",
+    "name": "Jazz FM",
+    "streamUrl": "https://cdn.bweb.bg/radio/jazz-fm.mp3",
+    "fallbackUrls": [],
+    "genre": "Джаз",
+    "city": "София",
+    "logoUrl": "https://jazzfm.bg/static/bg/microsites/jazzfm/img/favicon.ico",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "classicfm",
+    "name": "Classic FM",
+    "streamUrl": "https://cdn.bweb.bg/radio/classic-fm.mp3",
+    "fallbackUrls": [],
+    "genre": "Класическа музика",
+    "city": "София",
+    "logoUrl": "https://classicfm.bg/static/bg/microsites/classicfm/img/logo_header.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "njoy",
+    "name": "N-Joy",
+    "streamUrl": "https://cdn.bweb.bg/radio/njoy.mp3",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "horizont",
+    "name": "БНР Хоризонт",
+    "streamUrl": "http://play.global.audio/testbhi.aac",
+    "fallbackUrls": [
+      "http://play.global.audio/testb.aac?dist=RADIOPLAY",
+      "https://lb-hls.cdn.bg/2032/fls/Horizont.stream/playlist.m3u8"
+    ],
+    "genre": "Новини",
+    "city": "София",
+    "logoUrl": "https://bnr.bg/img/logos/logo-white-horizont.png",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "hristobotev",
+    "name": "БНР Христо Ботев",
+    "streamUrl": "https://lb-hls.cdn.bg/2032/fls/HrBotev.stream/playlist.m3u8",
+    "fallbackUrls": [],
+    "genre": "Класическа музика",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrsofia",
+    "name": "БНР Радио София",
+    "streamUrl": "https://lb-hls.cdn.bg/2032/fls/Sofia.stream/playlist.m3u8",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrplovdiv",
+    "name": "БНР Радио Пловдив",
+    "streamUrl": "https://lb-hls.cdn.bg/2032/fls/Plovdiv.stream/playlist.m3u8",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "Пловдив",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrshumen",
+    "name": "БНР Радио Шумен",
+    "streamUrl": "https://lb-hls.cdn.bg/2032/fls/Shumen.stream/playlist.m3u8",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "Шумен",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrburgas",
+    "name": "БНР Радио Бургас",
+    "streamUrl": "http://stream.bnr.bg:8037/radio-burgas.aac",
+    "fallbackUrls": [
+      "https://lb-hls.cdn.bg/2032/fls/Burgas.stream/playlist.m3u8"
+    ],
+    "genre": "Новини",
+    "city": "Бургас",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrblagoevgrad",
+    "name": "БНР Радио Благоевград",
+    "streamUrl": "http://stream.bnr.bg:8035/radio-blagoevgrad.aac",
+    "fallbackUrls": [
+      "https://lb-hls.cdn.bg/2032/fls/Blagoevgrad.stream/playlist.m3u8"
+    ],
+    "genre": "Новини",
+    "city": "Благоевград",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrvidin",
+    "name": "БНР Радио Видин",
+    "streamUrl": "http://stream.bnr.bg:8036/radio-vidin.aac",
+    "fallbackUrls": [
+      "https://lb-hls.cdn.bg/2032/fls/Vidin.stream/playlist.m3u8"
+    ],
+    "genre": "Новини",
+    "city": "Видин",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrkardzhali",
+    "name": "БНР Радио Кърджали",
+    "streamUrl": "http://stream.bnr.bg:8038/radio-kardzhali.aac",
+    "fallbackUrls": [
+      "https://lb-hls.cdn.bg/2032/fls/Kardzhali.stream/playlist.m3u8"
+    ],
+    "genre": "Новини",
+    "city": "Кърджали",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrvarna",
+    "name": "БНР Радио Варна",
+    "streamUrl": "http://broadcast.masters.bg:8000/live",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "Варна",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bnrstarazagora",
+    "name": "БНР Радио Стара Загора",
+    "streamUrl": "http://82.103.99.99:8000/radiosz",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "Стара Загора",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "darik",
+    "name": "Дарик Радио",
+    "streamUrl": "https://a12.asurahosting.com/listen/darik_radio/radio.mp3",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "София",
+    "logoUrl": "",
+    "popular": true,
+    "status": "verified"
+  },
+  {
+    "id": "dariknostalgie",
+    "name": "Дарик Носталжи",
+    "streamUrl": "https://a10.asurahosting.com:7600/radio.mp3",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "focus",
+    "name": "Радио Фокус",
+    "streamUrl": "https://focusradio.dataserv.cc/1",
+    "fallbackUrls": [],
+    "genre": "Новини",
+    "city": "Русе",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "maya_varna",
+    "name": "Радио Мая Варна",
+    "streamUrl": "http://rnmediagroup.com:10000/;",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "Варна",
+    "logoUrl": "http://radiomaia.com/wp-content/themes/radio/images/favicons/apple-touch-icon-120x120.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "maya_burgas",
+    "name": "Радио Мая Бургас",
+    "streamUrl": "https://radio.rn-tv.com:8000/stream/1/",
+    "fallbackUrls": [
+      "http://rnmediagroup.com:9000/;"
+    ],
+    "genre": "Хитове",
+    "city": "Бургас",
+    "logoUrl": "https://radiomaia.com/wp-content/themes/radio/images/favicons/apple-touch-icon-120x120.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "katra",
+    "name": "Катра FM",
+    "streamUrl": "http://www.katrafm.com:8000/live",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "Пловдив",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "powerfm",
+    "name": "Power FM",
+    "streamUrl": "http://a1.virtualradio.eu:8000/powerfm.mp3",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "Бургас",
+    "logoUrl": "https://www.powerfm.bg/assets/images/logo12.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "mixx",
+    "name": "Радио Mixx",
+    "streamUrl": "http://83.97.65.98:9000/",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "Бургас",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "ultra_sandanski",
+    "name": "Радио Ултра Сандански",
+    "streamUrl": "http://88.80.96.25:8000/",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "Сандански",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "ultra_blagoevgrad",
+    "name": "Радио Ултра Благоевград",
+    "streamUrl": "http://88.80.96.25:3060/",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "Благоевград",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "ultra_pernik",
+    "name": "Радио Ултра Перник",
+    "streamUrl": "http://88.80.96.25:8020/;",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "Перник",
+    "logoUrl": "http://play.radioultra.bg/wp-content/uploads/2022/05/cropped-radio-ultra-150x150-1-192x192.jpg",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "vega",
+    "name": "Вега+",
+    "streamUrl": "http://88.80.96.25:8040/",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "Сандански",
+    "logoUrl": "https://radiovega.bg/wp-content/uploads/2022/05/cropped-favicon-180x180.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "horo",
+    "name": "Радио Хоро",
+    "streamUrl": "http://g5.turbohost.eu:8020/stream256",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "",
+    "logoUrl": "http://www.radiohoro.com/images/logo.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "jega",
+    "name": "Радио Жега",
+    "streamUrl": "http://g5.turbohost.eu:8004/stream",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "sladko",
+    "name": "Радио Сладко изкушение",
+    "streamUrl": "http://g5.turbohost.eu:8006/autodj",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "dancewithme",
+    "name": "Radio Dance With Me",
+    "streamUrl": "http://g5.turbohost.eu:8002/stream128",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "",
+    "logoUrl": "http://www.dancewithme-bg.com/images/liveradio/logo.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "melodia_silistra",
+    "name": "Радио Мелодия Силистра",
+    "streamUrl": "http://g5.turbohost.eu:8010/stream128",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "Силистра",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "gamma",
+    "name": "Радио Гама",
+    "streamUrl": "http://g5.turbohost.eu:8003/gama128",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "teteven",
+    "name": "Радио Тетевен",
+    "streamUrl": "http://g5.turbohost.eu:8001/teteven",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "Тетевен",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "lelemale",
+    "name": "Радио Леле Мале",
+    "streamUrl": "http://79.98.108.170:8332/;",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "retrofolk",
+    "name": "Радио Ретро Фолк",
+    "streamUrl": "http://79.98.108.170:8053/",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "hushove",
+    "name": "Радио Хъшове",
+    "streamUrl": "http://79.98.108.173:8006/radioxaschove",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "slavi",
+    "name": "Радио Слави",
+    "streamUrl": "http://79.98.108.170:8043/;",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "favorit",
+    "name": "Радио Фаворит",
+    "streamUrl": "http://79.98.108.170:8235/stream",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "kanon",
+    "name": "Радио Канон",
+    "streamUrl": "http://79.98.108.170:8059/stream",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "http://www.radiokanon.com/images/favicon.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "musicbg",
+    "name": "Radio Music BG",
+    "streamUrl": "http://79.98.108.170:8243/stream",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "zetra",
+    "name": "Радио Зетра",
+    "streamUrl": "http://79.98.108.170:8092/;",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "cyberfolk",
+    "name": "Радио Cyberfolk",
+    "streamUrl": "http://91.227.77.124/cyberfolk",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "badrock_classic",
+    "name": "BadRock Classic Rock",
+    "streamUrl": "https://streams.badrockradio.net/classic-rock",
+    "fallbackUrls": [
+      "https://play-radio0.jump.bg:7489/live"
+    ],
+    "genre": "Рок",
+    "city": "",
+    "logoUrl": "https://badrockradio.net/wp-content/uploads/2021/10/BadRock-Logo-tvoyat1.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "badrock_golden",
+    "name": "BadRock Golden Era",
+    "streamUrl": "https://streams.badrockradio.net/golden-era",
+    "fallbackUrls": [],
+    "genre": "Рок",
+    "city": "",
+    "logoUrl": "https://badrockradio.net/wp-content/uploads/2021/10/BadRock-Logo-tvoyat1.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "badrock_national",
+    "name": "BadRock National",
+    "streamUrl": "https://streams.badrockradio.net/national",
+    "fallbackUrls": [],
+    "genre": "Рок",
+    "city": "",
+    "logoUrl": "https://badrockradio.net/wp-content/uploads/2021/10/BadRock-Logo-tvoyat1.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "raimos_rock",
+    "name": "Raimos Rock Radio",
+    "streamUrl": "http://a1.virtualradio.eu:8000/rockradio",
+    "fallbackUrls": [],
+    "genre": "Рок",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "raimos_disco",
+    "name": "Raimos Disco Radio",
+    "streamUrl": "http://a1.virtualradio.eu:8000/discoradio",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "family",
+    "name": "Радио Family",
+    "streamUrl": "http://a1.virtualradio.eu:8000/family.mp3",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_dance",
+    "name": "Metro Dance Radio",
+    "streamUrl": "https://eu1.reliastream.com/proxy/mdr?mp=/MDR",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "https://metrocast.top/wp-content/uploads/2021/09/metrodance.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_hits",
+    "name": "Metro Hits Radio",
+    "streamUrl": "https://eu1.reliastream.com/proxy/mhr?mp=/MHR",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_love90",
+    "name": "Metro Love 90s",
+    "streamUrl": "https://eu1.reliastream.com/proxy/love80?mp=/MLR90S",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_love80",
+    "name": "Metro Love 80s",
+    "streamUrl": "https://eu1.reliastream.com/proxy/love80?mp=/MLR80S",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_virtuoso",
+    "name": "Metro Virtuoso",
+    "streamUrl": "https://eu1.reliastream.com/proxy/mvr?mp=/MVR",
+    "fallbackUrls": [],
+    "genre": "Класическа музика",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metro_country",
+    "name": "Metro Country Rock",
+    "streamUrl": "https://radio.jump.bg/proxy/feed104?mp=/MSRR",
+    "fallbackUrls": [
+      "https://eu1.reliastream.com/proxy/feedb?mp=/CRR64"
+    ],
+    "genre": "Рок",
+    "city": "София",
+    "logoUrl": "https://metrocast.top/wp-content/uploads/2023/03/COUNTRY-ROCK-HD-LOGO-FINAL.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "easyradio",
+    "name": "Easy Radio",
+    "streamUrl": "https://live.easyradio.bg/aac?type=.mp3",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "",
+    "logoUrl": "https://easyradio.bg/apple-touch-icon.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "onlinedj",
+    "name": "Online DJ Radio",
+    "streamUrl": "https://play.onlinedjradio.com:7000/live",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "eilo_techno",
+    "name": "EILO Techno",
+    "streamUrl": "https://eilo.org/streamer.php?ch=techno",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "eilo_trance",
+    "name": "EILO Trance",
+    "streamUrl": "https://eilo.org/streamer.php?ch=trance",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "eilo_jazz",
+    "name": "EILO Jazz, Funk & Soul",
+    "streamUrl": "https://eilo.org/streamer.php?ch=jazzfunksoul",
+    "fallbackUrls": [],
+    "genre": "Джаз",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "radioruse",
+    "name": "Радио Русе",
+    "streamUrl": "https://radio.ruse.bg:8010/radioruse",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "Русе",
+    "logoUrl": "https://radioruse.com/site/images/logo7.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "dobrudja",
+    "name": "Радио Добруджа",
+    "streamUrl": "http://5.104.174.128:8000/radiodobrudja",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "Добрич",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "helikon",
+    "name": "Радио Хеликон",
+    "streamUrl": "http://87.121.90.229:9000/live_128",
+    "fallbackUrls": [],
+    "genre": "Поп",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "chanove",
+    "name": "Радио Чанове",
+    "streamUrl": "http://radio.chanove.com:8000/stream",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "strimonika",
+    "name": "Радио Стримоника",
+    "streamUrl": "https://play-radio0.jump.bg:7666/stream",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "zorana",
+    "name": "Радио Зорана",
+    "streamUrl": "https://radio.jump.bg/proxy/radio12/stream",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "София",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "radio999",
+    "name": "Радио 999",
+    "streamUrl": "http://62.204.158.5:8081/live",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "bglondon",
+    "name": "Radio BG London Plus",
+    "streamUrl": "http://live.radiobg.co.uk:8000/live",
+    "fallbackUrls": [],
+    "genre": "Българска музика",
+    "city": "Лондон",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "hotdance",
+    "name": "Hot Dance",
+    "streamUrl": "http://listen.hotget.net:810/",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "folkmix",
+    "name": "Folk Mix",
+    "streamUrl": "https://listen.radiofolkmix.com/folkmixios",
+    "fallbackUrls": [],
+    "genre": "Чалга",
+    "city": "",
+    "logoUrl": "https://radiofolkmix.com/wp-content/uploads/2024/01/cropped-radiofolkmix-180x180.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "viva",
+    "name": "Радио Viva",
+    "streamUrl": "http://stream.radioextra-bg.net:8000/viva",
+    "fallbackUrls": [],
+    "genre": "Денс",
+    "city": "Русе",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "fresh_ruse",
+    "name": "Радио Fresh Русе",
+    "streamUrl": "https://streamer2.atlantis.bg:8443/fresh",
+    "fallbackUrls": [],
+    "genre": "Хитове",
+    "city": "Русе",
+    "logoUrl": "https://radiofresh.bg/i/logo.png",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "radionet",
+    "name": "Radio NET",
+    "streamUrl": "https://icecast.haskovo.net:9443/",
+    "fallbackUrls": [],
+    "genre": "Джаз",
+    "city": "Хасково",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "metronom",
+    "name": "Радио Метроном",
+    "streamUrl": "http://radiometronom.com:8010/",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  },
+  {
+    "id": "beinsaduno",
+    "name": "Радио Беинса Дуно",
+    "streamUrl": "http://87.252.182.193:8000/;",
+    "fallbackUrls": [],
+    "genre": "Други",
+    "city": "",
+    "logoUrl": "",
+    "popular": false,
+    "status": "verified"
+  }
+]
