@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0] — 2026-10-12
+
+### Changed
+- **New look — Dark Premium + Radio Experience:** blue-black background, graphite cards, purple accent with blue and cyan; clearer "playing now" indication; calmer category tiles; redesigned player with a big Play button, live status badge and labelled Favourite / Stop.
+- Brand slogan under DOMINIX: „Няма нищо по-хубаво от лошото време“.
+- Accessibility: readable contrast (tested), state never shown by colour alone, 48 dp touch targets, text no longer clipped with large font sizes, display-cutout aware layout.
+
 ## [1.3.4] — 2026-10-12
 
 ### Changed
