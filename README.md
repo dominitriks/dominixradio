@@ -80,8 +80,8 @@ A new app version always starts from its own built-in list.
 Requirements: JDK 17 and the Android SDK (platform 35). Create `local.properties` with `sdk.dir=<path to Android SDK>`.
 
 ```bash
-./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.4.1-release.apk
-./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.4.1-debug.apk
+./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.5.0-release.apk
+./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.5.0-debug.apk
 ```
 
 Release signing reads `keystore.properties` (not committed):

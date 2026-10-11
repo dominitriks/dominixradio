@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.5.0] — 2026-10-12
+
+### Added
+- **Self-updating station catalog:** DOMINIX checks the station list on GitHub at most once a day (or from Settings → Каталог на станциите) and applies a valid new list right away, so fixed or new stations arrive without a new app version. Invalid downloads are ignored; the built-in list is always the fallback.
+- **"Рекламирай в DOMINIX"** (Settings → Information): partner packages for businesses and a contact button that opens your e-mail app.
+
 ## [1.4.1] — 2026-10-12
 
 ### Fixed
