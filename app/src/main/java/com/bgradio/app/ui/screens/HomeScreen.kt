@@ -1,5 +1,7 @@
 package com.bgradio.app.ui.screens
 
+import androidx.compose.material.icons.rounded.Campaign
+import androidx.compose.ui.semantics.Role
 import com.bgradio.app.ui.components.PartnersSection
 import android.widget.Toast
 import androidx.compose.foundation.background
@@ -76,6 +78,7 @@ fun HomeScreen(
     onOpenFavorites: () -> Unit,
     onOpenStats: () -> Unit = {},
     onOpenPartners: () -> Unit = {},
+    onOpenAdvertise: () -> Unit = {},
 ) {
     val partners by vm.partners.collectAsStateWithLifecycle()
     val player by vm.playerState.collectAsStateWithLifecycle()
@@ -140,6 +143,7 @@ fun HomeScreen(
         if (partners.isNotEmpty()) {
             item(key = "partners") { PartnersSection(partners, onOpenAll = onOpenPartners) }
         }
+        item(key = "advertise") { AdvertiseLink(onOpenAdvertise) }
         item(key = "credit") {
             Text(
                 "Created by Dominantus",
@@ -302,6 +306,37 @@ private fun CategoryGrid(genres: List<String>, stations: List<Station>, onOpen: 
                 }
             }
             if (genres.size % 2 == 1) Spacer(Modifier.weight(1f).size(0.dp))
+        }
+    }
+}
+
+/**
+ * Quiet footer link for potential advertisers: secondary colours, no frame, no animation — part of
+ * the page footer, not a banner. Opens the existing "Рекламирай в DOMINIX" page.
+ */
+@Composable
+private fun AdvertiseLink(onClick: () -> Unit) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.ScreenPadding)
+            .clip(Dimens.CardShape)
+            .clickable(role = Role.Button, onClickLabel = "Отвори", onClick = onClick)
+            .heightIn(min = 48.dp)
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Rounded.Campaign, contentDescription = null, tint = muted.copy(alpha = 0.8f), modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text("Рекламирай в DOMINIX", style = MaterialTheme.typography.labelLarge, color = muted)
+            Text(
+                "Възможности за бизнес партньори",
+                style = MaterialTheme.typography.labelSmall,
+                color = muted.copy(alpha = 0.75f),
+            )
         }
     }
 }

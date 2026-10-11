@@ -178,6 +178,7 @@ fun AppRoot(vm: MainViewModel) {
                     onOpenFavorites = { nav.navigateToTab(Routes.FAVORITES) },
                     onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } },
                     onOpenPartners = { nav.navigate(Routes.PARTNERS) { launchSingleTop = true } },
+                    onOpenAdvertise = { nav.navigate(Routes.ADVERTISE) { launchSingleTop = true } },
                 )
             }
             composable(Routes.FAVORITES) {
