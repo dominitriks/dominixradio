@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.screens
 
+import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Sync
 import com.bgradio.app.data.catalog.CatalogUpdateResult
 import com.bgradio.app.data.repository.CatalogInfo
@@ -68,7 +69,12 @@ import com.bgradio.app.utils.BackgroundStatus
 import com.bgradio.app.share.StationShare
 
 @Composable
-fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats: () -> Unit = {}) {
+fun SettingsScreen(
+    vm: MainViewModel,
+    contentPadding: PaddingValues,
+    onOpenStats: () -> Unit = {},
+    onOpenAdvertise: () -> Unit = {},
+) {
     val settings = vm.settings.collectAsStateWithLifecycle().value ?: AppSettings()
     val stations by vm.stations.collectAsStateWithLifecycle()
     var showAbout by rememberSaveable { mutableStateOf(false) }
@@ -164,6 +170,7 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats
                 Icons.Rounded.Share,
             ) { shareAppFailed = !StationShare.shareApp(context) }
             InfoRow("Изпрати обратна връзка", "Проблем или идея — чрез GitHub", Icons.Rounded.Feedback) { showFeedback = true }
+            InfoRow("Рекламирай в DOMINIX", "Пакети за бизнеса и контакт", Icons.Rounded.Campaign, onOpenAdvertise)
             InfoRow("Поверителност", "Не събираме лични данни", Icons.Rounded.PrivacyTip) { showPrivacy = true }
             InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)
             val catalog by vm.catalogInfo.collectAsStateWithLifecycle()

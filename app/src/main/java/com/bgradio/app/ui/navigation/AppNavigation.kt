@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.navigation
 
+import com.bgradio.app.ui.screens.AdvertiseScreen
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Radio
@@ -72,6 +73,7 @@ private object Routes {
     const val SETTINGS = "settings"
     const val PLAYER = "player"
     const val STATS = "stats"
+    const val ADVERTISE = "advertise"
 
     fun stations(search: Boolean = false) = "stations?search=$search"
 }
@@ -190,9 +192,15 @@ fun AppRoot(vm: MainViewModel) {
                 )
             }
             composable(Routes.SETTINGS) {
-                SettingsScreen(vm, padding, onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } })
+                SettingsScreen(
+                    vm,
+                    padding,
+                    onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } },
+                    onOpenAdvertise = { nav.navigate(Routes.ADVERTISE) { launchSingleTop = true } },
+                )
             }
             composable(Routes.STATS) { StatsScreen(vm, padding, onBack = { nav.popBackStack() }) }
+            composable(Routes.ADVERTISE) { AdvertiseScreen(padding, onBack = { nav.popBackStack() }) }
             composable(
                 Routes.PLAYER,
                 enterTransition = { slideInVertically(tween(320)) { it } + fadeIn() },
@@ -206,7 +214,7 @@ fun AppRoot(vm: MainViewModel) {
 }
 
 /** Screens opened on top of a tab (not tabs themselves). */
-private val SECONDARY_ROUTES = setOf(Routes.STATS, Routes.PLAYER)
+private val SECONDARY_ROUTES = setOf(Routes.STATS, Routes.PLAYER, Routes.ADVERTISE)
 
 /**
  * Bottom-bar tap. Secondary screens (e.g. Statistics) are closed first WITHOUT saving them —

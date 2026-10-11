@@ -334,9 +334,10 @@ private fun ActionButton(icon: ImageVector, label: String, enabled: Boolean, onC
     }
 }
 
-private fun copy(context: Context, text: String): Boolean = try {
+/** Copies [text] to the clipboard; false if the system refused. */
+internal fun copy(context: Context, text: String, label: String = "Доклад DOMINIX"): Boolean = try {
     val cm = context.getSystemService(ClipboardManager::class.java)
-    cm.setPrimaryClip(ClipData.newPlainText("Доклад DOMINIX", text))
+    cm.setPrimaryClip(ClipData.newPlainText(label, text))
     true
 } catch (_: Exception) {
     false
