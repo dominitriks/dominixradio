@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.1] — 2026-10-12
+
+### Fixed
+- Tapping "Начало" (or another tab) while Statistics was open kept showing Statistics; tabs now close it and switch correctly.
+
 ## [1.4.0] — 2026-10-12
 
 ### Changed
