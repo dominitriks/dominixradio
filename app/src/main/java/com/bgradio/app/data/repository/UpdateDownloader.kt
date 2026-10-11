@@ -3,12 +3,15 @@ package com.bgradio.app.data.repository
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
 import androidx.core.content.FileProvider
-import com.bgradio.app.data.model.AppVersion
+import androidx.core.content.pm.PackageInfoCompat
+import com.bgradio.app.BuildConfig
 import com.bgradio.app.data.model.ReleaseInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -32,21 +35,27 @@ class UpdateDownloader(private val context: Context) {
     private val dm = context.getSystemService(DownloadManager::class.java)
     private val dir: File? get() = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
+    /** Final, verified update file. */
     fun fileFor(release: ReleaseInfo): File? = dir?.let { File(it, "Dominix-v${release.version}.apk") }
 
-    /** Starts the download; returns its id, or null if it could not be started. */
+    /** Temporary file the download is written to; only renamed to [fileFor] after verification. */
+    fun partFor(release: ReleaseInfo): File? = dir?.let { File(it, "Dominix-v${release.version}-partial.apk") }
+
+    /** Starts the download into the temporary file; returns its id, or null if it could not start. */
     fun start(release: ReleaseInfo): Long? {
-        val url = release.apkUrl ?: return null
-        val target = fileFor(release) ?: return null
-        // Old update files are no longer needed.
-        target.parentFile?.listFiles { f -> f.name.startsWith("Dominix-") && f.name.endsWith(".apk") }?.forEach { it.delete() }
+        val url = release.apkUrl?.takeIf(ReleaseInfo::isTrustedApkUrl) ?: return null
+        val part = partFor(release) ?: return null
+        val keep = fileFor(release)?.name
+        // Leftovers of other versions and old partial downloads are not needed.
+        part.parentFile?.listFiles { f -> f.name.startsWith("Dominix-") && f.name.endsWith(".apk") && f.name != keep }
+            ?.forEach { it.delete() }
         return try {
             val request = DownloadManager.Request(Uri.parse(url))
-                .setTitle("Dominix ${release.version}")
+                .setTitle("DOMINIX ${release.version}")
                 .setDescription("Изтегляне на нова версия")
                 .setMimeType(APK_MIME)
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                .setDestinationUri(Uri.fromFile(target))
+                .setDestinationUri(Uri.fromFile(part))
             dm?.enqueue(request)
         } catch (_: Exception) {
             null
@@ -57,7 +66,7 @@ class UpdateDownloader(private val context: Context) {
         runCatching { dm?.remove(id) }
     }
 
-    fun state(id: Long, target: File): DownloadState {
+    fun state(id: Long, part: File): DownloadState {
         val cursor = dm?.query(DownloadManager.Query().setFilterById(id))
             ?: return DownloadState.Failed("Свалянето не е достъпно на това устройство.")
         cursor.use { c ->
@@ -65,40 +74,67 @@ class UpdateDownloader(private val context: Context) {
             val status = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
             val done = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
             val total = c.getLong(c.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
-            return when (status) {
-                DownloadManager.STATUS_SUCCESSFUL ->
-                    if (target.exists()) DownloadState.Done(target) else DownloadState.Failed("Файлът не беше намерен след свалянето.")
-                DownloadManager.STATUS_FAILED -> DownloadState.Failed(
-                    "Свалянето не успя (код ${c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON))}). Проверете интернет връзката."
-                )
-                else -> DownloadState.Running(if (total > 0) ((done * 100) / total).toInt().coerceIn(0, 100) else null)
-            }
+            val reason = c.getInt(c.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON))
+            return mapStatus(status, done, total, reason, part)
         }
     }
 
     /**
-     * Checks the downloaded file before offering to install it: checksum from GitHub (when
-     * published), that it really is Dominix, and that it is the expected version.
-     * Returns null when OK, otherwise a message for the user.
+     * Verifies a finished download and moves it into place. Returns the installable file, or the
+     * problem. A failed check deletes the temporary file and leaves any earlier good file alone.
      */
+    suspend fun verifyAndFinalize(part: File, release: ReleaseInfo): Pair<File?, String?> = withContext(Dispatchers.IO) {
+        val problem = verify(part, release)
+        val target = fileFor(release)
+        val finalFile = if (target == null) null else UpdateVerifier.finalize(part, target, verified = problem == null)
+        when {
+            problem != null -> null to problem
+            finalFile == null -> null to "Файлът не можа да бъде записан. Опитайте отново."
+            else -> finalFile to null
+        }
+    }
+
+    /** Checks an update file (also one downloaded earlier) — see [UpdateVerifier.check]. */
     suspend fun verify(file: File, release: ReleaseInfo): String? = withContext(Dispatchers.IO) {
-        if (release.apkSizeBytes > 0 && file.length() != release.apkSizeBytes) {
-            return@withContext "Изтегленият файл е непълен. Опитайте отново."
+        UpdateVerifier.check(
+            file = file,
+            expectedSize = release.apkSizeBytes,
+            expectedSha256 = release.apkSha256,
+            facts = apkFacts(file),
+            ourPackage = context.packageName,
+            installedVersionCode = BuildConfig.VERSION_CODE.toLong(),
+        )
+    }
+
+    /** Package name, versionCode and signer of an APK file as Android reads them. */
+    private fun apkFacts(file: File): ApkFacts? {
+        val pm = context.packageManager
+        val flags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) PackageManager.GET_SIGNING_CERTIFICATES else 0
+        val info = try {
+            @Suppress("DEPRECATION")
+            pm.getPackageArchiveInfo(file.path, flags)
+        } catch (_: Exception) {
+            null
+        } ?: return null
+        return ApkFacts(
+            packageName = info.packageName,
+            versionCode = PackageInfoCompat.getLongVersionCode(info),
+            sameSigner = sameSigner(info),
+        )
+    }
+
+    /** Compares signing certificates with the installed app; null when Android can't tell. */
+    private fun sameSigner(archive: PackageInfo): Boolean? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return null
+        return try {
+            val theirs = archive.signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet()
+            val ours = context.packageManager
+                .getPackageInfo(context.packageName, PackageManager.GET_SIGNING_CERTIFICATES)
+                .signingInfo?.apkContentsSigners?.map { it.toCharsString() }?.toSet()
+            if (theirs.isNullOrEmpty() || ours.isNullOrEmpty()) null else theirs == ours
+        } catch (_: Exception) {
+            null
         }
-        release.apkSha256?.let { expected ->
-            if (sha256(file) != expected) return@withContext "Изтегленият файл е повреден (контролната сума не съвпада). Опитайте отново."
-        }
-        @Suppress("DEPRECATION")
-        val info = context.packageManager.getPackageArchiveInfo(file.path, 0)
-            ?: return@withContext "Изтегленият файл не е валидно Android приложение."
-        if (info.packageName != context.packageName) {
-            return@withContext "Изтегленият файл не е обновление на Dominix."
-        }
-        val fileVersion = AppVersion.parse(info.versionName)
-        if (fileVersion == null || fileVersion < release.version) {
-            return@withContext "Изтегленият файл е с неочаквана версия (${info.versionName})."
-        }
-        null
     }
 
     /** Android 8+: the user must allow Dominix to install apps once ("Install unknown apps"). */
@@ -133,6 +169,16 @@ class UpdateDownloader(private val context: Context) {
 
     companion object {
         const val APK_MIME = "application/vnd.android.package-archive"
+
+        /** DownloadManager status → state. Pure — unit tested. */
+        fun mapStatus(status: Int, done: Long, total: Long, reason: Int, part: File): DownloadState = when (status) {
+            DownloadManager.STATUS_SUCCESSFUL ->
+                if (part.exists() && part.length() > 0) DownloadState.Done(part)
+                else DownloadState.Failed("Файлът не беше намерен след свалянето. Опитайте отново.")
+            DownloadManager.STATUS_FAILED ->
+                DownloadState.Failed("Свалянето беше прекъснато (код $reason). Проверете интернет връзката и опитайте отново.")
+            else -> DownloadState.Running(if (total > 0) ((done * 100) / total).toInt().coerceIn(0, 100) else null)
+        }
 
         fun sha256(file: File): String {
             val md = MessageDigest.getInstance("SHA-256")

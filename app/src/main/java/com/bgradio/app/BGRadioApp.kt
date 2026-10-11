@@ -22,7 +22,7 @@ class AppContainer(context: Context) {
     val prefs = UserPreferencesRepository(context)
     val network = NetworkMonitor(context)
     val player = PlayerConnection(context, stations)
-    val updates = UpdateRepository(network)
+    val updates = UpdateRepository(isOnline = network::isOnline)
     val checker = StreamChecker(network)
     val downloader = UpdateDownloader(context)
     val stats = StatsRepository(File(context.filesDir, "listening_stats.json"))

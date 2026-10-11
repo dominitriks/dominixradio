@@ -11,6 +11,8 @@ import org.junit.Test
 
 class ReleaseInfoTest {
 
+    private val OFFICIAL = "https://github.com/dominitriks/dominixradio/releases/download"
+
     /** Real response of GET /repos/dominitriks/dominixradio/releases/latest (v1.3.0, with asset digests). */
     private val realJson = javaClass.classLoader!!.getResource("github_release_latest.json")!!.readText()
 
@@ -67,10 +69,10 @@ class ReleaseInfoTest {
 
         val both = ReleaseInfo.parse(
             """{"tag_name":"v2.0.0","assets":[
-                {"name":"Dominix-v2.0.0-debug.apk","browser_download_url":"https://x/debug.apk","size":20},
-                {"name":"Dominix-v2.0.0.apk","browser_download_url":"https://x/release.apk","size":3}]}"""
+                {"name":"Dominix-v2.0.0-debug.apk","browser_download_url":"$OFFICIAL/v2.0.0/Dominix-v2.0.0-debug.apk","size":20},
+                {"name":"Dominix-v2.0.0.apk","browser_download_url":"$OFFICIAL/v2.0.0/Dominix-v2.0.0.apk","size":3}]}"""
         )!!
-        assertEquals("https://x/release.apk", both.apkUrl)
+        assertEquals("$OFFICIAL/v2.0.0/Dominix-v2.0.0.apk", both.apkUrl)
     }
 
     @Test

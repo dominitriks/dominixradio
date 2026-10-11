@@ -46,13 +46,14 @@ fun UpdateDialog(
             val r = result.release
             AlertDialog(
                 onDismissRequest = { onDismiss(false) },
-                title = { Text("Нова версия: ${r.version}") },
+                title = { Text("Налична е нова версия на DOMINIX") },
                 text = {
                     Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
+                        Text("Текуща версия: $installed", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "Инсталирана версия: $installed",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            "Нова версия: ${r.version}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.primary,
                         )
                         Spacer(Modifier.height(12.dp))
                         if (r.notes.isNotBlank()) {
@@ -80,7 +81,7 @@ fun UpdateDialog(
                             download is MainViewModel.UpdateDownloadUi.Verifying ->
                             TextButton(onClick = onCancelDownload) { Text("Отказ") }
                         else -> TextButton(onClick = { onDownload(r) }) {
-                            Text(if (download is MainViewModel.UpdateDownloadUi.Failed) "Опитай отново" else "Изтегли и инсталирай")
+                            Text(if (download is MainViewModel.UpdateDownloadUi.Failed) "Опитай отново" else "Обнови сега")
                         }
                     }
                 },
@@ -88,7 +89,7 @@ fun UpdateDialog(
                     if (download is MainViewModel.UpdateDownloadUi.NeedsPermission) {
                         TextButton(onClick = onOpenInstallSettings) { Text("Към настройката") }
                     } else {
-                        TextButton(onClick = { onDismiss(download is MainViewModel.UpdateDownloadUi.Idle) }) { Text("По-късно") }
+                        TextButton(onClick = { onDismiss(false) }) { Text("По-късно") }
                     }
                 },
             )

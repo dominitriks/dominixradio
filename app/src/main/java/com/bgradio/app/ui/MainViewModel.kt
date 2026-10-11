@@ -139,9 +139,14 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
     fun downloadUpdate(release: ReleaseInfo) {
         if (_download.value is UpdateDownloadUi.Downloading || _download.value == UpdateDownloadUi.Verifying) return
+        if (release.version <= updates.installedVersion) {
+            _download.value = UpdateDownloadUi.Failed("Тази версия не е по-нова от инсталираната.")
+            return
+        }
         downloadJob?.cancel()
         downloadJob = viewModelScope.launch {
             val target = downloader.fileFor(release)
+            val part = downloader.partFor(release)
             // Already downloaded earlier and still valid → straight to install.
             if (target != null && target.exists() && downloader.verify(target, release) == null) {
                 readyFile = target
@@ -149,14 +154,14 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
                 return@launch
             }
             val id = downloader.start(release)
-            if (id == null || target == null) {
+            if (id == null || target == null || part == null) {
                 _download.value = UpdateDownloadUi.Failed("Свалянето не можа да започне. Опитайте „Отвори в браузъра“.")
                 return@launch
             }
             downloadId = id
             _download.value = UpdateDownloadUi.Downloading(null)
             while (true) {
-                when (val st = withContext(Dispatchers.IO) { downloader.state(id, target) }) {
+                when (val st = withContext(Dispatchers.IO) { downloader.state(id, part) }) {
                     is DownloadState.Running -> _download.value = UpdateDownloadUi.Downloading(st.percent)
                     is DownloadState.Failed -> {
                         _download.value = UpdateDownloadUi.Failed(st.message)
@@ -164,12 +169,10 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
                     }
                     is DownloadState.Done -> {
                         _download.value = UpdateDownloadUi.Verifying
-                        val problem = downloader.verify(st.file, release)
-                        if (problem == null) readyFile = st.file
-                        _download.value = if (problem == null) UpdateDownloadUi.Ready(st.file) else {
-                            st.file.delete()
-                            UpdateDownloadUi.Failed(problem)
-                        }
+                        val (file, problem) = downloader.verifyAndFinalize(st.file, release)
+                        if (file != null) readyFile = file
+                        _download.value = if (file != null) UpdateDownloadUi.Ready(file)
+                        else UpdateDownloadUi.Failed(problem ?: "Проверката на файла не успя. Опитайте отново.")
                         break
                     }
                 }
@@ -204,30 +207,26 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         _download.value = UpdateDownloadUi.Idle
     }
 
+    /**
+     * Automatic check on every app start (manual = false): silent unless a newer version is
+     * confirmed. Manual check from Settings: always shows the result. Never blocks the UI or
+     * playback; a second check while one runs is ignored.
+     */
     fun checkForUpdates(manual: Boolean) {
         if (_update.value == UpdateUi.Checking) return
         viewModelScope.launch {
             _update.value = UpdateUi.Checking
             val result = updates.check()
+            if (result == null) return@launch // another check is already running
             val ui = UpdateUi.Result(result, manual)
             _update.value = ui
-            if (!manual && result !is UpdateResult.Failed) prefs.setLastUpdateCheck(System.currentTimeMillis())
-            val dismissed = prefs.dismissedUpdate.first()
-            val show = manual || (result is UpdateResult.Available && result.release.version.toString() != dismissed)
-            if (show) _updateDialog.value = ui
+            if (manual || result is UpdateResult.Available) _updateDialog.value = ui
         }
     }
 
-    fun dismissUpdateDialog(rememberVersion: Boolean) {
-        val r = (_updateDialog.value?.result as? UpdateResult.Available)?.release
-        if (rememberVersion && r != null) viewModelScope.launch { prefs.setDismissedUpdate(r.version.toString()) }
+    /** "По-късно" — nothing is remembered; the next app start checks again. */
+    fun dismissUpdateDialog(@Suppress("UNUSED_PARAMETER") rememberVersion: Boolean = false) {
         _updateDialog.value = null
-    }
-
-    /** At most one automatic check per day, only when the app is opened. */
-    private suspend fun maybeAutoCheckUpdates() {
-        val last = prefs.lastUpdateCheck.first()
-        if (System.currentTimeMillis() - last > 24 * 60 * 60 * 1000L) checkForUpdates(manual = false)
     }
 
     private val _stations = MutableStateFlow<List<Station>>(emptyList())
@@ -292,7 +291,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
             // Show the last listened station on start (paused), ready to continue with one tap.
             val lastId = prefs.recent.first().firstOrNull()
             stationRepo.find(lastId)?.let { player.restoreLastStation(it, all) }
-            maybeAutoCheckUpdates()
+            checkForUpdates(manual = false)
         }
     }
 

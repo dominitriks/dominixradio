@@ -57,7 +57,7 @@ data class ReleaseInfo(
                         title = o.optString("name").ifBlank { "Dominix $it" },
                         notes = cleanNotes(o.optString("body")),
                         pageUrl = o.optString("html_url").ifBlank { AppInfo.RELEASES_URL },
-                        apkUrl = apk?.optString("browser_download_url")?.takeIf { u -> u.startsWith("https://") },
+                        apkUrl = apk?.optString("browser_download_url")?.takeIf(::isTrustedApkUrl),
                         apkSizeBytes = apk?.optLong("size") ?: 0L,
                         apkSha256 = apk?.optString("digest")
                             ?.takeIf { d -> d.startsWith("sha256:", ignoreCase = true) }
@@ -68,6 +68,17 @@ data class ReleaseInfo(
             }
         } catch (_: Exception) {
             null
+        }
+
+        /**
+         * Only APK links of the official repository are accepted — never an arbitrary URL that
+         * appears in an API answer.
+         */
+        fun isTrustedApkUrl(url: String): Boolean {
+            if (!url.startsWith(AppInfo.APK_DOWNLOAD_PREFIX)) return false
+            val rest = url.removePrefix(AppInfo.APK_DOWNLOAD_PREFIX) // "v1.3.3/Dominix-v1.3.3.apk"
+            return !rest.contains("..") && !rest.contains('?') && !rest.contains('#') &&
+                rest.count { it == '/' } == 1 && rest.endsWith(".apk", ignoreCase = true)
         }
 
         /** Markdown release notes → short plain text (max ~12 lines). */

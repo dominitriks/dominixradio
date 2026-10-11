@@ -9,6 +9,8 @@ object AppInfo {
     const val RELEASES_URL = "$REPO_URL/releases"
     const val LATEST_RELEASE_API = "https://api.github.com/repos/$GITHUB_OWNER/$GITHUB_REPO/releases/latest"
     const val NEW_ISSUE_URL = "$REPO_URL/issues/new"
+    /** Release assets of the official repository — the only accepted source of update APKs. */
+    const val APK_DOWNLOAD_PREFIX = "$RELEASES_URL/download/"
     const val PRIVACY_URL = "$REPO_URL/blob/main/PRIVACY.md"
 
     /**
