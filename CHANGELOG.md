@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4] — 2026-10-12
+
+### Changed
+- **Update check on every start** (in the background, silent unless a newer stable version is confirmed). "Later" no longer hides a version — it is offered again at the next start.
+- Update dialog: "Налична е нова версия на DOMINIX" with current and new version, release notes, "Обнови сега" / "По-късно".
+- Safer in-app updates: only APKs from the official GitHub repository are accepted; the download goes to a temporary file and is used only after checking size, GitHub's SHA-256, package name, a higher version code and the signing key — an incomplete download never replaces a good file. Only one check or download at a time.
+
 ## [1.3.3] — 2026-10-12
 
 ### Added
