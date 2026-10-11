@@ -25,8 +25,15 @@ data class CatalogMeta(
 )
 
 /** Downloaded catalog stored in [dir]; writes are atomic (temp file + rename). */
-class CatalogCache(private val dir: File) {
-    private val catalogFile get() = File(dir, "stations.json")
+class CatalogCache(private val dir: File, private val fileName: String = "stations.json") {
+    private val catalogFile get() = File(dir, fileName)
+
+    /** Raw cached file, or null (used for files other than the station list, e.g. partners). */
+    fun readText(): String? = try {
+        if (catalogFile.exists()) catalogFile.readText() else null
+    } catch (_: IOException) {
+        null
+    }
     private val metaFile get() = File(dir, "catalog_meta.json")
 
     fun meta(): CatalogMeta? = try {

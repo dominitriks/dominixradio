@@ -1,5 +1,6 @@
 package com.bgradio.app
 
+import com.bgradio.app.data.partners.PartnersRepository
 import com.bgradio.app.data.catalog.CatalogCache
 import com.bgradio.app.data.catalog.CatalogUpdater
 import android.app.Application
@@ -27,6 +28,11 @@ class AppContainer(context: Context) {
         cache = catalogCache,
         apply = stations::applyDownloaded,
         bundledIds = { stations.bundledIds },
+        isOnline = network::isOnline,
+    )
+    val partners = PartnersRepository(
+        cache = CatalogCache(File(context.filesDir, "partners"), fileName = "partners.json"),
+        bundled = { context.assets.open("partners.json").bufferedReader(Charsets.UTF_8).use { it.readText() } },
         isOnline = network::isOnline,
     )
     val prefs = UserPreferencesRepository(context)

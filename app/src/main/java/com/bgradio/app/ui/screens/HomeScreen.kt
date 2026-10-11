@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.screens
 
+import com.bgradio.app.ui.components.PartnersSection
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
@@ -74,7 +75,9 @@ fun HomeScreen(
     onOpenSearch: () -> Unit,
     onOpenFavorites: () -> Unit,
     onOpenStats: () -> Unit = {},
+    onOpenPartners: () -> Unit = {},
 ) {
+    val partners by vm.partners.collectAsStateWithLifecycle()
     val player by vm.playerState.collectAsStateWithLifecycle()
     val recent by vm.recent.collectAsStateWithLifecycle()
     val favorites by vm.favorites.collectAsStateWithLifecycle()
@@ -133,6 +136,9 @@ fun HomeScreen(
             item(key = "categories") {
                 CategoryGrid(genres, stations, onOpenCategory)
             }
+        }
+        if (partners.isNotEmpty()) {
+            item(key = "partners") { PartnersSection(partners, onOpenAll = onOpenPartners) }
         }
         item(key = "credit") {
             Text(

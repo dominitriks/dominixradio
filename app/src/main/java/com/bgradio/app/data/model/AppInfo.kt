@@ -17,6 +17,9 @@ object AppInfo {
      * The station list in the repository — the same file that is built into the APK. Editing it on
      * GitHub updates every installed DOMINIX within a day.
      */
+    /** Partners shown in "Партньори на DOMINIX" — edited in the repository, like the catalog. */
+    const val PARTNERS_URL = "https://raw.githubusercontent.com/$GITHUB_OWNER/$GITHUB_REPO/main/app/src/main/assets/partners.json"
+
     const val CATALOG_URL = "https://raw.githubusercontent.com/$GITHUB_OWNER/$GITHUB_REPO/main/app/src/main/assets/stations.json"
 
     /**

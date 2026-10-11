@@ -75,6 +75,30 @@ A new app version always starts from its own built-in list.
 
 `genre` is one of: Поп, Хитове, Рок, Денс, Българска музика, Чалга, Новини, Спорт, Джаз, Класическа музика, Други.
 
+## Partners
+
+Partners shown in *Партньори на DOMINIX* (home screen, bottom, and Settings → Партньори на DOMINIX)
+come from [`app/src/main/assets/partners.json`](app/src/main/assets/partners.json). Edit it on GitHub —
+the app downloads it at most once a day (or when *Каталог на станциите* is tapped in Settings).
+
+```json
+[
+  {
+    "id": "cafe_radio",
+    "name": "Кафе Радио",
+    "url": "https://caferadio.bg",
+    "logoUrl": "https://caferadio.bg/logo.png",
+    "tier": "premium",
+    "until": "2027-10-31"
+  }
+]
+```
+
+- `tier`: `basic` (Основен — name + link) or `premium` (Премиум / Годишен — logo + name + link, shown first and larger).
+- `until`: last day the partner is shown (`yyyy-MM-dd`); after it the entry disappears automatically. Monthly: set one month ahead; yearly: 12 months.
+- `id`: `a-z`, `0-9`, `_`; `url` and `logoUrl` must be `https://`. Invalid entries are skipped; an invalid file keeps the previous list.
+- An empty list `[]` hides the section.
+
 ## Building from source
 
 Requirements: JDK 17 and the Android SDK (platform 35). Create `local.properties` with `sdk.dir=<path to Android SDK>`.

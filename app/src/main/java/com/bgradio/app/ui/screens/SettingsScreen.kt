@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.screens
 
+import androidx.compose.material.icons.rounded.Handshake
 import androidx.compose.material.icons.rounded.Campaign
 import androidx.compose.material.icons.rounded.Sync
 import com.bgradio.app.data.catalog.CatalogUpdateResult
@@ -74,6 +75,7 @@ fun SettingsScreen(
     contentPadding: PaddingValues,
     onOpenStats: () -> Unit = {},
     onOpenAdvertise: () -> Unit = {},
+    onOpenPartners: () -> Unit = {},
 ) {
     val settings = vm.settings.collectAsStateWithLifecycle().value ?: AppSettings()
     val stations by vm.stations.collectAsStateWithLifecycle()
@@ -170,6 +172,7 @@ fun SettingsScreen(
                 Icons.Rounded.Share,
             ) { shareAppFailed = !StationShare.shareApp(context) }
             InfoRow("Изпрати обратна връзка", "Проблем или идея — чрез GitHub", Icons.Rounded.Feedback) { showFeedback = true }
+            InfoRow("Партньори на DOMINIX", "Бизнеси, които подкрепят приложението", Icons.Rounded.Handshake, onOpenPartners)
             InfoRow("Рекламирай в DOMINIX", "Пакети за бизнеса и контакт", Icons.Rounded.Campaign, onOpenAdvertise)
             InfoRow("Поверителност", "Не събираме лични данни", Icons.Rounded.PrivacyTip) { showPrivacy = true }
             InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)

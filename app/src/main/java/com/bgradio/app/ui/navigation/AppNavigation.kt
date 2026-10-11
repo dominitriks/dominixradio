@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.navigation
 
+import com.bgradio.app.ui.screens.PartnersScreen
 import com.bgradio.app.ui.screens.AdvertiseScreen
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.outlined.Home
@@ -74,6 +75,7 @@ private object Routes {
     const val PLAYER = "player"
     const val STATS = "stats"
     const val ADVERTISE = "advertise"
+    const val PARTNERS = "partners"
 
     fun stations(search: Boolean = false) = "stations?search=$search"
 }
@@ -175,6 +177,7 @@ fun AppRoot(vm: MainViewModel) {
                     },
                     onOpenFavorites = { nav.navigateToTab(Routes.FAVORITES) },
                     onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } },
+                    onOpenPartners = { nav.navigate(Routes.PARTNERS) { launchSingleTop = true } },
                 )
             }
             composable(Routes.FAVORITES) {
@@ -197,10 +200,19 @@ fun AppRoot(vm: MainViewModel) {
                     padding,
                     onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } },
                     onOpenAdvertise = { nav.navigate(Routes.ADVERTISE) { launchSingleTop = true } },
+                    onOpenPartners = { nav.navigate(Routes.PARTNERS) { launchSingleTop = true } },
                 )
             }
             composable(Routes.STATS) { StatsScreen(vm, padding, onBack = { nav.popBackStack() }) }
             composable(Routes.ADVERTISE) { AdvertiseScreen(padding, onBack = { nav.popBackStack() }) }
+            composable(Routes.PARTNERS) {
+                PartnersScreen(
+                    vm,
+                    padding,
+                    onBack = { nav.popBackStack() },
+                    onAdvertise = { nav.navigate(Routes.ADVERTISE) { launchSingleTop = true } },
+                )
+            }
             composable(
                 Routes.PLAYER,
                 enterTransition = { slideInVertically(tween(320)) { it } + fadeIn() },
@@ -214,7 +226,7 @@ fun AppRoot(vm: MainViewModel) {
 }
 
 /** Screens opened on top of a tab (not tabs themselves). */
-private val SECONDARY_ROUTES = setOf(Routes.STATS, Routes.PLAYER, Routes.ADVERTISE)
+private val SECONDARY_ROUTES = setOf(Routes.STATS, Routes.PLAYER, Routes.ADVERTISE, Routes.PARTNERS)
 
 /**
  * Bottom-bar tap. Secondary screens (e.g. Statistics) are closed first WITHOUT saving them —

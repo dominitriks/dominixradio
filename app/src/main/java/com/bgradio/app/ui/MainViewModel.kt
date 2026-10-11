@@ -1,5 +1,8 @@
 package com.bgradio.app.ui
 
+import com.bgradio.app.data.partners.Partner
+import com.bgradio.app.data.partners.PartnersParser
+import com.bgradio.app.data.stats.Days
 import com.bgradio.app.data.catalog.CatalogUpdateResult
 import com.bgradio.app.data.repository.CatalogInfo
 import com.bgradio.app.data.repository.StationRepository
@@ -294,6 +297,8 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
             stationRepo.find(lastId)?.let { player.restoreLastStation(it, all) }
             checkForUpdates(manual = false)
             refreshCatalog(manual = false)
+            withContext(Dispatchers.IO) { container.partners.ensureLoaded() }
+            container.partners.refresh(force = false)
         }
         // The catalog can change at runtime when a newer stations.json is downloaded.
         viewModelScope.launch {
@@ -307,6 +312,11 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     // ---- Station catalog updates (stations.json from GitHub) -----------------------------
 
     val catalogInfo: StateFlow<CatalogInfo> = stationRepo.info
+
+    /** Active (not expired) partners, premium first. */
+    val partners: StateFlow<List<Partner>> = container.partners.all
+        .map { PartnersParser.active(it, Days.key(System.currentTimeMillis())) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     sealed interface CatalogUi {
         data object Idle : CatalogUi
@@ -322,6 +332,8 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         if (_catalogUi.value == CatalogUi.Checking) return
         viewModelScope.launch {
             if (manual) _catalogUi.value = CatalogUi.Checking
+            // A manual check also refreshes the partner list (same source on GitHub).
+            if (manual) launch { container.partners.refresh(force = true) }
             val result = container.catalogUpdater.refresh(force = manual) ?: return@launch
             if (manual || result is CatalogUpdateResult.Updated) _catalogUi.value = CatalogUi.Done(result)
             else if (_catalogUi.value == CatalogUi.Checking) _catalogUi.value = CatalogUi.Idle
