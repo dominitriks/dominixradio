@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -46,6 +48,7 @@ import com.bgradio.app.data.model.Station
 import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.ui.MainViewModel
 import com.bgradio.app.utils.BackgroundStatus
+import com.bgradio.app.share.StationShare
 import com.bgradio.app.ui.components.SectionHeader
 import com.bgradio.app.ui.components.StationTile
 import com.bgradio.app.ui.components.playbackFor
@@ -149,6 +152,14 @@ private fun Header(stationCount: Int, onOpenSearch: () -> Unit, onOpenStats: () 
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text("DOMINIX", style = MaterialTheme.typography.displaySmall, modifier = Modifier.weight(1f))
+                val context = LocalContext.current
+                IconButton(onClick = {
+                    if (!StationShare.shareApp(context)) {
+                        Toast.makeText(context, "Няма приложение, с което да се сподели.", Toast.LENGTH_SHORT).show()
+                    }
+                }) {
+                    Icon(Icons.Rounded.Share, contentDescription = "Сподели DOMINIX", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 IconButton(onClick = onOpenStats) {
                     Icon(Icons.Rounded.BarChart, contentDescription = "Статистика", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
