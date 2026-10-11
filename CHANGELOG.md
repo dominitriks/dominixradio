@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.1] — 2026-10-12
+
+### Added
+- **"Партньори на DOMINIX":** the partner section promised in the advertising packages — a discreet, labelled block at the bottom of the home screen (only when there are partners) and a page in Settings. Partners are maintained in `partners.json` on GitHub, expire automatically and open in the browser.
+
 ## [1.5.0] — 2026-10-12
 
 ### Added
