@@ -1,6 +1,10 @@
 package com.bgradio.app.utils
 
 import com.bgradio.app.data.model.Station
+import java.text.Collator
+import java.util.Locale
+
+enum class StationSort(val label: String) { POPULAR("Популярни"), NAME("По име (А–Я)") }
 
 /**
  * Search that tolerates Latin/Cyrillic: "radio 1", "радио 1", "rok" and "рок" all match.
@@ -36,5 +40,13 @@ object SearchUtils {
         if (q.isEmpty()) return true
         val haystack = normalize("${station.name} ${station.genre} ${station.city}")
         return q.split(' ').all { haystack.contains(it) }
+    }
+
+    private val bgCollator: Collator = Collator.getInstance(Locale("bg", "BG")).apply { strength = Collator.PRIMARY }
+
+    /** POPULAR keeps popular stations first (catalog order otherwise); NAME sorts by Bulgarian alphabet. */
+    fun sort(stations: List<Station>, sort: StationSort): List<Station> = when (sort) {
+        StationSort.POPULAR -> stations.sortedByDescending { it.popular } // stable: keeps catalog order
+        StationSort.NAME -> stations.sortedWith(compareBy(bgCollator) { it.name })
     }
 }

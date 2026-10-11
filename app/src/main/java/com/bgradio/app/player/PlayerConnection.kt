@@ -34,6 +34,8 @@ data class PlayerUiState(
     /** Changes every time the service reports a new error, so the UI can show it once. */
     val errorSeq: Int = 0,
     val volume: Float = 1f,
+    /** elapsedRealtime when the sleep timer stops playback; null when off. */
+    val sleepEndsAt: Long? = null,
 ) {
     val isLoading: Boolean get() = playWhenReady && (isBuffering || reconnectMessage != null) && !isPlaying
     val hasStation: Boolean get() = station != null
@@ -50,6 +52,13 @@ class PlayerConnection(
 ) {
     private val _state = MutableStateFlow(PlayerUiState())
     val state: StateFlow<PlayerUiState> = _state.asStateFlow()
+
+    /**
+     * Station shown when nothing is loaded in the service (restored last station, or the one that
+     * was playing before the service released itself). Play starts it with [restoreQueue].
+     */
+    private var lastStation: Station? = null
+    private var restoreQueue: List<Station> = emptyList()
 
     private var future: ListenableFuture<MediaController>? = null
     private var controller: MediaController? = null
@@ -79,6 +88,9 @@ class PlayerConnection(
             // Show an ongoing reconnect, but don't replay an old error when the app is reopened.
             if (c.sessionExtras.getString(PlayerContract.EXTRA_STATUS) == PlayerContract.STATUS_RECONNECTING) {
                 applyExtras(c.sessionExtras)
+            } else {
+                val ends = c.sessionExtras.getLong(PlayerContract.EXTRA_SLEEP_ENDS_AT, 0L).takeIf { it > 0 }
+                _state.update { it.copy(sleepEndsAt = ends) }
             }
             pending.toList().forEach { it(c) }
             pending.clear()
@@ -104,8 +116,18 @@ class PlayerConnection(
 
     // ---- Commands -------------------------------------------------------------------------
 
+    /** Shows [station] (paused) after app start, unless something is already playing. */
+    fun restoreLastStation(station: Station, queue: List<Station>) {
+        if (_state.value.station != null) return
+        lastStation = station
+        restoreQueue = queue
+        _state.update { it.copy(station = station, playWhenReady = false, isPlaying = false) }
+    }
+
     /** Plays [station]; [queue] defines what Previous/Next move through. */
     fun play(station: Station, queue: List<Station>) {
+        lastStation = station
+        restoreQueue = queue
         _state.update { it.copy(station = station, playWhenReady = true, errorMessage = null, reconnectMessage = null) }
         withController { c ->
             val list = queue.takeIf { q -> q.any { it.id == station.id } } ?: listOf(station)
@@ -128,7 +150,7 @@ class PlayerConnection(
     fun resume() = withController { c ->
         _state.update { it.copy(errorMessage = null) }
         if (c.mediaItemCount == 0) {
-            _state.value.station?.let { play(it, listOf(it)) }
+            _state.value.station?.let { play(it, restoreQueue.ifEmpty { listOf(it) }) }
         } else {
             c.play()
         }
@@ -138,7 +160,16 @@ class PlayerConnection(
 
     fun stop() = withController { c ->
         c.sendCustomCommand(PlayerContract.STOP_COMMAND, Bundle.EMPTY)
+        lastStation = null
         _state.update { PlayerUiState(volume = it.volume) }
+    }
+
+    /** [minutes] <= 0 turns the sleep timer off. */
+    fun setSleepTimer(minutes: Int) = withController { c ->
+        c.sendCustomCommand(
+            PlayerContract.SLEEP_TIMER_COMMAND,
+            Bundle().apply { putInt(PlayerContract.EXTRA_SLEEP_MINUTES, minutes) },
+        )
     }
 
     fun next() = withController { it.seekToNext() }
@@ -163,11 +194,12 @@ class PlayerConnection(
     private fun syncFromController(c: Player) {
         val id = c.currentMediaItem?.mediaId
         val station = stations.find(id)
+        if (station != null) lastStation = station
         // The service puts the current song (if the stream sends one) into "artist".
         val song = c.mediaMetadata.artist?.toString()
         _state.update {
             it.copy(
-                station = station ?: if (c.mediaItemCount == 0) null else it.station,
+                station = station ?: if (c.mediaItemCount == 0) lastStation else it.station,
                 isPlaying = c.isPlaying,
                 playWhenReady = c.playWhenReady,
                 isBuffering = c.playbackState == Player.STATE_BUFFERING,
@@ -178,6 +210,8 @@ class PlayerConnection(
     }
 
     private fun applyExtras(extras: Bundle) {
+        val sleepEndsAt = extras.getLong(PlayerContract.EXTRA_SLEEP_ENDS_AT, 0L).takeIf { it > 0 }
+        _state.update { it.copy(sleepEndsAt = sleepEndsAt) }
         val status = extras.getString(PlayerContract.EXTRA_STATUS) ?: return
         val message = extras.getString(PlayerContract.EXTRA_MESSAGE)
         val seq = extras.getInt(PlayerContract.EXTRA_SEQ)
@@ -213,7 +247,8 @@ class PlayerConnection(
             if (this@PlayerConnection.controller === controller) {
                 this@PlayerConnection.controller = null
                 future = null
-                _state.update { PlayerUiState(volume = it.volume) }
+                // Keep showing the last station (paused) so Play can restart it.
+                _state.update { PlayerUiState(station = lastStation, volume = it.volume) }
             }
         }
     }

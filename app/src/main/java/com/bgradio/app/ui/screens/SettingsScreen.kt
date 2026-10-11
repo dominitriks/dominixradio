@@ -1,9 +1,5 @@
 package com.bgradio.app.ui.screens
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +19,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.BatteryChargingFull
+import androidx.compose.material.icons.rounded.BatterySaver
 import androidx.compose.material.icons.rounded.BrightnessAuto
+import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.DarkMode
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.LightMode
@@ -40,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,11 +48,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgradio.app.BuildConfig
 import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.ui.MainViewModel
+import com.bgradio.app.utils.BackgroundStatus
 
 @Composable
 fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
@@ -106,11 +107,28 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
         }
 
         SettingsGroup("Фоново възпроизвеждане") {
+            val bg = rememberBackgroundStatus()
+            InfoRow(
+                "Работа на заден фон",
+                when {
+                    bg.backgroundRestricted -> "⚠ Ограничена от Android — радиото ще спира при заключен екран. Натиснете и разрешете работа на заден фон."
+                    else -> "✓ Разрешена"
+                },
+                Icons.Rounded.BatteryChargingFull,
+            ) { BackgroundStatus.openAppSettings(context) }
             InfoRow(
                 "Оптимизация на батерията",
-                "Ако телефонът спира радиото при заключен екран, изберете „Без ограничения“ за Dominix",
-                Icons.Rounded.BatteryChargingFull,
-            ) { openBatterySettings(context) }
+                if (bg.ignoringBatteryOptimizations) "✓ Без ограничения"
+                else "Включена. Ако телефонът спира радиото, изберете „Без ограничения“ за Dominix.",
+                Icons.Rounded.BatterySaver,
+            ) { BackgroundStatus.openAppSettings(context) }
+            if (bg.isXiaomi) {
+                InfoRow(
+                    "Автостарт (Xiaomi)",
+                    "На Xiaomi/Redmi/POCO включете „Автостарт“ за Dominix, за да не се спира радиото.",
+                    Icons.Rounded.PlayCircle,
+                ) { BackgroundStatus.openXiaomiAutostart(context) }
+            }
         }
 
         SettingsGroup("Информация") {
@@ -129,21 +147,6 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
 
     if (showAbout) {
         AboutDialog(stationCount = stations.size, onDismiss = { showAbout = false })
-    }
-}
-
-private fun openBatterySettings(context: Context) {
-    val intents = listOf(
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}")),
-        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-    )
-    for (intent in intents) {
-        try {
-            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-            return
-        } catch (_: Exception) {
-            // try the next one
-        }
     }
 }
 
@@ -218,4 +221,16 @@ private fun InfoRow(title: String, value: String, icon: ImageVector, onClick: ((
             Text(value, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
+}
+
+/** Re-reads the background status each time the screen is resumed (e.g. back from Settings). */
+@Composable
+internal fun rememberBackgroundStatus(): BackgroundStatus {
+    val context = LocalContext.current
+    var status by remember { mutableStateOf(BackgroundStatus.read(context)) }
+    LifecycleResumeEffect(Unit) {
+        status = BackgroundStatus.read(context)
+        onPauseOrDispose { }
+    }
+    return status
 }

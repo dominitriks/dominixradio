@@ -12,12 +12,14 @@ import com.bgradio.app.data.model.Station
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.utils.SearchUtils
+import com.bgradio.app.utils.StationSort
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -48,10 +50,15 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         all.filter { it.id in ids }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val recent: StateFlow<List<Station>> = combine(_stations, prefs.recent) { all, ids ->
+    /** Up to 10 recently played stations, newest first. */
+    val recentAll: StateFlow<List<Station>> = combine(_stations, prefs.recent) { all, ids ->
         val byId = all.associateBy { it.id }
-        ids.mapNotNull { byId[it] }.take(5)
+        ids.mapNotNull { byId[it] }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** The 5 shown on the home screen. */
+    val recent: StateFlow<List<Station>> = recentAll.map { it.take(5) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     val popular: StateFlow<List<Station>> = _stations.map { all -> all.filter { it.popular } }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
@@ -64,15 +71,28 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     private val _genre = MutableStateFlow<String?>(null)
     val selectedGenre: StateFlow<String?> = _genre.asStateFlow()
 
-    val filtered: StateFlow<List<Station>> = combine(_stations, _query, _genre) { all, q, g ->
-        all.filter { (g == null || it.genre == g) && SearchUtils.matches(it, q) }
+    private val _sort = MutableStateFlow(StationSort.POPULAR)
+    val sort: StateFlow<StationSort> = _sort.asStateFlow()
+
+    val filtered: StateFlow<List<Station>> = combine(_stations, _query, _genre, _sort) { all, q, g, sort ->
+        SearchUtils.sort(all.filter { (g == null || it.genre == g) && SearchUtils.matches(it, q) }, sort)
     }.flowOn(Dispatchers.Default)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /** Stations per genre for the current search text (shown on the filter chips). */
+    val genreCounts: StateFlow<Map<String, Int>> = combine(_stations, _query) { all, q ->
+        all.filter { SearchUtils.matches(it, q) }.groupingBy { it.genre }.eachCount()
+    }.flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
     init {
-        viewModelScope.launch(Dispatchers.IO) {
-            _stations.value = stationRepo.stations
+        viewModelScope.launch {
+            val all = withContext(Dispatchers.IO) { stationRepo.stations }
+            _stations.value = all
             _genres.value = stationRepo.genres
+            // Show the last listened station on start (paused), ready to continue with one tap.
+            val lastId = prefs.recent.first().firstOrNull()
+            stationRepo.find(lastId)?.let { player.restoreLastStation(it, all) }
         }
     }
 
@@ -82,6 +102,15 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
 
     fun selectGenre(genre: String?) {
         _genre.value = genre
+    }
+
+    fun setSort(sort: StationSort) {
+        _sort.value = sort
+    }
+
+    fun clearFilters() {
+        _query.value = ""
+        _genre.value = null
     }
 
     // ---- Player ---------------------------------------------------------------------------
@@ -107,6 +136,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     fun previous() = player.previous()
     fun setVolume(v: Float) = player.setVolume(v)
     fun clearError() = player.clearError()
+    fun setSleepTimer(minutes: Int) = player.setSleepTimer(minutes)
 
     // ---- Favorites & settings -------------------------------------------------------------
 

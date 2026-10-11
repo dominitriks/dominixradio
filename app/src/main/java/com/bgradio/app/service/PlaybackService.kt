@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import androidx.annotation.OptIn
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
@@ -36,6 +37,7 @@ import com.bgradio.app.data.model.Categories
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.player.PlaybackErrors
 import com.bgradio.app.player.PlayerContract
+import com.bgradio.app.player.SleepTimer
 import com.bgradio.app.player.StationMediaItems
 import com.bgradio.app.utils.SearchUtils
 import com.google.common.collect.ImmutableList
@@ -86,6 +88,30 @@ class PlaybackService : MediaLibraryService() {
     private val idleStop = Runnable {
         if (!exoPlayer.playWhenReady) stopPlayback()
     }
+
+    // Sleep timer: fades out, then pauses. Lives here so it works with the app closed.
+    private val sleepTimer = SleepTimer(SystemClock::elapsedRealtime)
+    private var fadeStep = 0
+    private var fading = false
+    private var volumeBeforeFade = 1f
+    private val sleepRunnable = Runnable { startFadeOut() }
+    private val fadeRunnable = object : Runnable {
+        override fun run() {
+            fadeStep++
+            if (fadeStep >= SleepTimer.FADE_STEPS || !exoPlayer.playWhenReady) {
+                finishSleep()
+            } else {
+                exoPlayer.volume = volumeBeforeFade * (1f - fadeStep.toFloat() / SleepTimer.FADE_STEPS)
+                handler.postDelayed(this, SleepTimer.FADE_OUT_MS / SleepTimer.FADE_STEPS)
+            }
+        }
+    }
+
+    // Last published status, re-sent together with the sleep timer state.
+    private var lastStatus = PlayerContract.STATUS_IDLE
+    private var lastMessage: String? = null
+    private var lastAttempt = 0
+    private var lastMaxAttempts = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -193,9 +219,46 @@ class PlaybackService : MediaLibraryService() {
         return true
     }
 
+    private fun setSleepTimer(minutes: Int) {
+        cancelSleepTimer(restoreVolume = true)
+        sleepTimer.start(minutes)?.let { delay ->
+            handler.postDelayed(sleepRunnable, (delay - SleepTimer.FADE_OUT_MS).coerceAtLeast(0))
+        }
+        pushExtras()
+    }
+
+    private fun cancelSleepTimer(restoreVolume: Boolean) {
+        handler.removeCallbacks(sleepRunnable)
+        if (fading && restoreVolume) exoPlayer.volume = volumeBeforeFade
+        fading = false
+        handler.removeCallbacks(fadeRunnable)
+        sleepTimer.cancel()
+    }
+
+    private fun startFadeOut() {
+        if (!exoPlayer.playWhenReady) {
+            finishSleep()
+            return
+        }
+        volumeBeforeFade = exoPlayer.volume
+        fadeStep = 0
+        fading = true
+        handler.post(fadeRunnable)
+    }
+
+    private fun finishSleep() {
+        handler.removeCallbacks(fadeRunnable)
+        exoPlayer.pause()
+        if (fading) exoPlayer.volume = volumeBeforeFade
+        fading = false
+        sleepTimer.cancel()
+        pushExtras()
+    }
+
     /** Stop button: stop audio, drop the notification, release the service. */
     private fun stopPlayback() {
         handler.removeCallbacks(idleStop)
+        cancelSleepTimer(restoreVolume = true)
         exoPlayer.stop()
         exoPlayer.clearMediaItems()
         currentStationId = null
@@ -304,13 +367,24 @@ class PlaybackService : MediaLibraryService() {
     }
 
     private fun publishStatus(status: String, message: String? = null, attempt: Int = 0, max: Int = 0) {
+        lastStatus = status
+        lastMessage = message
+        lastAttempt = attempt
+        lastMaxAttempts = max
+        statusSeq++
+        pushExtras()
+    }
+
+    /** Sends playback status + sleep timer to all controllers (UI). */
+    private fun pushExtras() {
         val extras = Bundle().apply {
-            putString(PlayerContract.EXTRA_STATUS, status)
-            putString(PlayerContract.EXTRA_MESSAGE, message)
-            putInt(PlayerContract.EXTRA_ATTEMPT, attempt)
-            putInt(PlayerContract.EXTRA_MAX_ATTEMPTS, max)
+            putString(PlayerContract.EXTRA_STATUS, lastStatus)
+            putString(PlayerContract.EXTRA_MESSAGE, lastMessage)
+            putInt(PlayerContract.EXTRA_ATTEMPT, lastAttempt)
+            putInt(PlayerContract.EXTRA_MAX_ATTEMPTS, lastMaxAttempts)
             putString(PlayerContract.EXTRA_STATION_ID, currentStationId)
-            putInt(PlayerContract.EXTRA_SEQ, ++statusSeq)
+            putInt(PlayerContract.EXTRA_SEQ, statusSeq)
+            sleepTimer.endsAt?.let { putLong(PlayerContract.EXTRA_SLEEP_ENDS_AT, it) }
         }
         session?.setSessionExtras(extras)
     }
@@ -375,6 +449,7 @@ class PlaybackService : MediaLibraryService() {
         ): MediaSession.ConnectionResult {
             val commands = MediaSession.ConnectionResult.DEFAULT_SESSION_AND_LIBRARY_COMMANDS.buildUpon()
                 .add(PlayerContract.STOP_COMMAND)
+                .add(PlayerContract.SLEEP_TIMER_COMMAND)
                 .build()
             return MediaSession.ConnectionResult.AcceptedResultBuilder(session)
                 .setAvailableSessionCommands(commands)
@@ -387,9 +462,15 @@ class PlaybackService : MediaLibraryService() {
             customCommand: SessionCommand,
             args: Bundle,
         ): ListenableFuture<SessionResult> {
-            if (customCommand.customAction == PlayerContract.ACTION_STOP) {
-                stopPlayback()
-                return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+            when (customCommand.customAction) {
+                PlayerContract.ACTION_STOP -> {
+                    stopPlayback()
+                    return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                }
+                PlayerContract.ACTION_SLEEP_TIMER -> {
+                    setSleepTimer(args.getInt(PlayerContract.EXTRA_SLEEP_MINUTES, 0))
+                    return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+                }
             }
             return super.onCustomCommand(session, controller, customCommand, args)
         }

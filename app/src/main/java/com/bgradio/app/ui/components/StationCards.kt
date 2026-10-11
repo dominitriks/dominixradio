@@ -30,6 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bgradio.app.data.model.Station
@@ -71,8 +74,21 @@ fun StationCard(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
-            .clickable(interactionSource = interaction, indication = null) {
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClickLabel = if (playback.isCurrent) "Отвори плейъра" else "Пусни",
+            ) {
                 if (playback.isCurrent) onOpen() else onPlayToggle()
+            }
+            .semantics {
+                stateDescription = when {
+                    !playback.isCurrent -> ""
+                    playback.button == PlayButtonState.LOADING -> "Свързване"
+                    playback.isPlaying -> "Свири сега"
+                    else -> "На пауза"
+                }
             },
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -135,7 +151,13 @@ fun StationTile(
         modifier
             .width(width)
             .scale(scale)
-            .clickable(interactionSource = interaction, indication = null, onClick = onPlayToggle),
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                role = Role.Button,
+                onClickLabel = "Пусни ${station.name}",
+                onClick = onPlayToggle,
+            ),
     ) {
         Box {
             StationLogo(station, size = width, corner = 24.dp)

@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,6 +43,7 @@ import com.bgradio.app.data.model.Categories
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.ui.MainViewModel
+import com.bgradio.app.utils.BackgroundStatus
 import com.bgradio.app.ui.components.SectionHeader
 import com.bgradio.app.ui.components.StationTile
 import com.bgradio.app.ui.components.playbackFor
@@ -70,6 +72,27 @@ fun HomeScreen(
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
         item(key = "header") { Header(stations.size, onOpenSearch) }
+
+        item(key = "bgwarning") {
+            val bg = rememberBackgroundStatus()
+            val context = LocalContext.current
+            if (bg.backgroundRestricted) {
+                Surface(
+                    onClick = { BackgroundStatus.openAppSettings(context) },
+                    shape = RoundedCornerShape(18.dp),
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                ) {
+                    Text(
+                        "Android ограничава Dominix на заден фон и радиото ще спира при заключен екран. " +
+                            "Натиснете тук и разрешете работа на заден фон / „Без ограничения“.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(16.dp),
+                    )
+                }
+            }
+        }
 
         if (recent.isNotEmpty()) {
             item(key = "recent") {

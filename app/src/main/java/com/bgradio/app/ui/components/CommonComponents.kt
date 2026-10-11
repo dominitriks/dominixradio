@@ -70,6 +70,7 @@ fun CategoryChips(
     selected: String?,
     onSelect: (String?) -> Unit,
     modifier: Modifier = Modifier,
+    counts: Map<String, Int> = emptyMap(),
 ) {
     val state = rememberLazyListState()
     LazyRow(
@@ -82,7 +83,8 @@ fun CategoryChips(
             GenreChip("Всички", selected == null) { onSelect(null) }
         }
         items(genres, key = { it }) { g ->
-            GenreChip(Categories.shortLabel(g), selected == g) { onSelect(if (selected == g) null else g) }
+            val label = Categories.shortLabel(g) + (counts[g]?.let { " · $it" } ?: "")
+            GenreChip(label, selected == g) { onSelect(if (selected == g) null else g) }
         }
     }
 }
