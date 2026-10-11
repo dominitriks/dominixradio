@@ -60,6 +60,19 @@ The station list is in [`app/src/main/assets/stations.json`](app/src/main/assets
 }
 ```
 
+**Updating stations without a new app version:** the app downloads this same file from the `main`
+branch at most once a day (and when you tap *Settings → Каталог на станциите*). Edit
+`app/src/main/assets/stations.json` on GitHub, commit — every installed DOMINIX picks it up within
+24 hours. Rules the app enforces before using a downloaded list:
+
+- valid JSON array, at most 512 KB, at least half as many stations as the built-in list (min. 10);
+- at least half of the built-in station `id`s must still be present (protects against uploading a wrong file);
+- each entry needs `id` (`a-z`, `0-9`, `_`), `name` and an `http(s)` `streamUrl`; invalid entries are skipped;
+- keep existing `id`s unchanged — favourites and statistics are linked to them.
+
+If a download is invalid, the app keeps the previous list (or the one built into the APK).
+A new app version always starts from its own built-in list.
+
 `genre` is one of: Поп, Хитове, Рок, Денс, Българска музика, Чалга, Новини, Спорт, Джаз, Класическа музика, Други.
 
 ## Building from source

@@ -1,5 +1,8 @@
 package com.bgradio.app.ui.screens
 
+import androidx.compose.material.icons.rounded.Sync
+import com.bgradio.app.data.catalog.CatalogUpdateResult
+import com.bgradio.app.data.repository.CatalogInfo
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -163,6 +166,13 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats
             InfoRow("Изпрати обратна връзка", "Проблем или идея — чрез GitHub", Icons.Rounded.Feedback) { showFeedback = true }
             InfoRow("Поверителност", "Не събираме лични данни", Icons.Rounded.PrivacyTip) { showPrivacy = true }
             InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)
+            val catalog by vm.catalogInfo.collectAsStateWithLifecycle()
+            val catalogUi by vm.catalogUi.collectAsStateWithLifecycle()
+            InfoRow(
+                "Каталог на станциите",
+                catalogStatus(catalog, catalogUi),
+                Icons.Rounded.Sync,
+            ) { vm.refreshCatalog(manual = true) }
             val update by vm.update.collectAsStateWithLifecycle()
             InfoRow(
                 "Проверка за нова версия",
@@ -284,4 +294,24 @@ internal fun rememberBackgroundStatus(): BackgroundStatus {
         onPauseOrDispose { }
     }
     return status
+}
+
+private val catalogDate = java.text.SimpleDateFormat("dd.MM.yyyy, HH:mm", java.util.Locale("bg", "BG"))
+
+/** Where the station list comes from and the result of the last manual check. */
+private fun catalogStatus(info: CatalogInfo, ui: MainViewModel.CatalogUi): String {
+    val base = if (info.downloaded && info.updatedAt != null) {
+        "${info.count} станции · обновен ${catalogDate.format(java.util.Date(info.updatedAt))}"
+    } else {
+        "${info.count} станции · вградени в приложението"
+    }
+    return when (ui) {
+        MainViewModel.CatalogUi.Checking -> "Проверява се в GitHub…"
+        is MainViewModel.CatalogUi.Done -> when (val r = ui.result) {
+            is CatalogUpdateResult.Updated -> "Обновен току-що · ${r.count} станции"
+            CatalogUpdateResult.NotModified, CatalogUpdateResult.NotDue -> "Няма промени · $base"
+            is CatalogUpdateResult.Failed -> "${r.message} Използва се: $base"
+        }
+        MainViewModel.CatalogUi.Idle -> "$base · натиснете за проверка"
+    }
 }

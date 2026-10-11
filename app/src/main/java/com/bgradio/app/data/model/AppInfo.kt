@@ -14,6 +14,12 @@ object AppInfo {
     const val PRIVACY_URL = "$REPO_URL/blob/main/PRIVACY.md"
 
     /**
+     * The station list in the repository — the same file that is built into the APK. Editing it on
+     * GitHub updates every installed DOMINIX within a day.
+     */
+    const val CATALOG_URL = "https://raw.githubusercontent.com/$GITHUB_OWNER/$GITHUB_REPO/main/app/src/main/assets/stations.json"
+
+    /**
      * Official download page used in shares and QR codes. Change it here if Dominix gets its own
      * website. (No per-station deep link exists, so links never point at a specific station.)
      */

@@ -1,5 +1,7 @@
 package com.bgradio.app
 
+import com.bgradio.app.data.catalog.CatalogCache
+import com.bgradio.app.data.catalog.CatalogUpdater
 import android.app.Application
 import android.content.Context
 import coil.ImageLoader
@@ -18,9 +20,16 @@ import com.bgradio.app.utils.NetworkMonitor
 
 /** Simple manual dependency container — one instance per app process. */
 class AppContainer(context: Context) {
-    val stations = StationRepository(context)
-    val prefs = UserPreferencesRepository(context)
     val network = NetworkMonitor(context)
+    private val catalogCache = CatalogCache(File(context.filesDir, "catalog"))
+    val stations = StationRepository(context, catalogCache)
+    val catalogUpdater = CatalogUpdater(
+        cache = catalogCache,
+        apply = stations::applyDownloaded,
+        bundledIds = { stations.bundledIds },
+        isOnline = network::isOnline,
+    )
+    val prefs = UserPreferencesRepository(context)
     val player = PlayerConnection(context, stations)
     val updates = UpdateRepository(isOnline = network::isOnline)
     val checker = StreamChecker(network)

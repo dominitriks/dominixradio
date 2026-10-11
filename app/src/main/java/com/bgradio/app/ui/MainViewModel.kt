@@ -1,5 +1,8 @@
 package com.bgradio.app.ui
 
+import com.bgradio.app.data.catalog.CatalogUpdateResult
+import com.bgradio.app.data.repository.CatalogInfo
+import com.bgradio.app.data.repository.StationRepository
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
@@ -286,12 +289,42 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch(Dispatchers.IO) { stats.ensureLoaded() }
         viewModelScope.launch {
             val all = withContext(Dispatchers.IO) { stationRepo.stations }
-            _stations.value = all
-            _genres.value = stationRepo.genres
             // Show the last listened station on start (paused), ready to continue with one tap.
             val lastId = prefs.recent.first().firstOrNull()
             stationRepo.find(lastId)?.let { player.restoreLastStation(it, all) }
             checkForUpdates(manual = false)
+            refreshCatalog(manual = false)
+        }
+        // The catalog can change at runtime when a newer stations.json is downloaded.
+        viewModelScope.launch {
+            stationRepo.catalog.collect { list ->
+                _stations.value = list
+                _genres.value = StationRepository.genresOf(list)
+            }
+        }
+    }
+
+    // ---- Station catalog updates (stations.json from GitHub) -----------------------------
+
+    val catalogInfo: StateFlow<CatalogInfo> = stationRepo.info
+
+    sealed interface CatalogUi {
+        data object Idle : CatalogUi
+        data object Checking : CatalogUi
+        data class Done(val result: CatalogUpdateResult) : CatalogUi
+    }
+
+    private val _catalogUi = MutableStateFlow<CatalogUi>(CatalogUi.Idle)
+    val catalogUi: StateFlow<CatalogUi> = _catalogUi.asStateFlow()
+
+    /** Automatic: at most once a day, silently. Manual (Settings): always asks GitHub. */
+    fun refreshCatalog(manual: Boolean) {
+        if (_catalogUi.value == CatalogUi.Checking) return
+        viewModelScope.launch {
+            if (manual) _catalogUi.value = CatalogUi.Checking
+            val result = container.catalogUpdater.refresh(force = manual) ?: return@launch
+            if (manual || result is CatalogUpdateResult.Updated) _catalogUi.value = CatalogUi.Done(result)
+            else if (_catalogUi.value == CatalogUi.Checking) _catalogUi.value = CatalogUi.Idle
         }
     }
 
