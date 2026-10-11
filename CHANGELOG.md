@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.3] — 2026-10-12
+
+### Added
+- "Сподели DOMINIX" button on the home screen (next to statistics), in addition to Settings → Information.
+
 ## [1.3.2] — 2026-10-12
 
 ### Added
