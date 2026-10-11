@@ -205,6 +205,24 @@ fun AppRoot(vm: MainViewModel) {
     }
 }
 
+/** Screens opened on top of a tab (not tabs themselves). */
+private val SECONDARY_ROUTES = setOf(Routes.STATS, Routes.PLAYER)
+
+/**
+ * Bottom-bar tap. Secondary screens (e.g. Statistics) are closed first WITHOUT saving them —
+ * otherwise the tab's saved state would bring them back and "Начало" would show Statistics again.
+ */
+private fun NavHostController.selectTab(tabRoute: String, navRoute: String) {
+    while (currentDestination?.route in SECONDARY_ROUTES) {
+        if (!popBackStack()) break
+    }
+    when {
+        currentDestination?.route == tabRoute -> Unit
+        tabRoute == Routes.HOME -> if (!popBackStack(Routes.HOME, inclusive = false)) navigateToTab(navRoute)
+        else -> navigateToTab(navRoute)
+    }
+}
+
 private fun NavHostController.navigateToTab(route: String) {
     navigate(route) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
@@ -222,7 +240,7 @@ private fun BottomBar(nav: NavHostController, currentRoute: String?) {
                 val selected = currentRoute == tab.route
                 NavigationBarItem(
                     selected = selected,
-                    onClick = { if (!selected) nav.navigateToTab(tab.navRoute) },
+                    onClick = { nav.selectTab(tab.route, tab.navRoute) },
                     // The visible label names the tab; no duplicate description for TalkBack.
                     icon = { Icon(if (selected) tab.icon else tab.iconOff, contentDescription = null) },
                     label = { Text(tab.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
