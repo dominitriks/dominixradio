@@ -1,9 +1,9 @@
 {
-  "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/409760029",
-  "assets_url": "https://api.github.com/repos/dominitriks/dominixradio/releases/409760029/assets",
-  "upload_url": "https://uploads.github.com/repos/dominitriks/dominixradio/releases/409760029/assets{?name,label}",
-  "html_url": "https://github.com/dominitriks/dominixradio/releases/tag/v1.1.0",
-  "id": 409760029,
+  "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/409785918",
+  "assets_url": "https://api.github.com/repos/dominitriks/dominixradio/releases/409785918/assets",
+  "upload_url": "https://uploads.github.com/repos/dominitriks/dominixradio/releases/409785918/assets{?name,label}",
+  "html_url": "https://github.com/dominitriks/dominixradio/releases/tag/v1.3.0",
+  "id": 409785918,
   "author": {
     "login": "dominitriks",
     "id": 311131219,
@@ -25,22 +25,22 @@
     "user_view_type": "public",
     "site_admin": false
   },
-  "node_id": "RE_kwDOU_xmec4YbHEd",
-  "tag_name": "v1.1.0",
+  "node_id": "RE_kwDOU_xmec4YbNY-",
+  "tag_name": "v1.3.0",
   "target_commitish": "main",
-  "name": "Dominix v1.1.0",
+  "name": "Dominix v1.3.0",
   "draft": false,
   "immutable": false,
   "prerelease": false,
-  "created_at": "2026-10-11T15:44:12Z",
-  "updated_at": "2026-10-11T15:45:04Z",
-  "published_at": "2026-10-11T15:44:57Z",
+  "created_at": "2026-10-11T16:31:20Z",
+  "updated_at": "2026-10-11T16:32:44Z",
+  "published_at": "2026-10-11T16:32:37Z",
   "assets": [
     {
-      "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/assets/631130086",
-      "id": 631130086,
-      "node_id": "RA_kwDOU_xmec4lnkfm",
-      "name": "Dominix-v1.1.0.apk",
+      "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/assets/631230984",
+      "id": 631230984,
+      "node_id": "RA_kwDOU_xmec4ln9II",
+      "name": "Dominix-v1.3.0.apk",
       "label": "",
       "uploader": {
         "login": "dominitriks",
@@ -65,18 +65,18 @@
       },
       "content_type": "application/vnd.android.package-archive",
       "state": "uploaded",
-      "size": 3046621,
-      "digest": "sha256:8963ad0ecef785d357b5c33becdae206133b11753987dbaa130677a1c98edacf",
-      "download_count": 1,
-      "created_at": "2026-10-11T15:44:59Z",
-      "updated_at": "2026-10-11T15:45:01Z",
-      "browser_download_url": "https://github.com/dominitriks/dominixradio/releases/download/v1.1.0/Dominix-v1.1.0.apk"
+      "size": 3128945,
+      "digest": "sha256:49c5eba433def7160f71a80925601a5d6eccc0cbe5a6d140a157a9416232a002",
+      "download_count": 0,
+      "created_at": "2026-10-11T16:32:38Z",
+      "updated_at": "2026-10-11T16:32:41Z",
+      "browser_download_url": "https://github.com/dominitriks/dominixradio/releases/download/v1.3.0/Dominix-v1.3.0.apk"
     },
     {
-      "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/assets/631130205",
-      "id": 631130205,
-      "node_id": "RA_kwDOU_xmec4lnkhd",
-      "name": "Dominix-v1.1.0.zip",
+      "url": "https://api.github.com/repos/dominitriks/dominixradio/releases/assets/631231069",
+      "id": 631231069,
+      "node_id": "RA_kwDOU_xmec4ln9Jd",
+      "name": "Dominix-v1.3.0.zip",
       "label": "",
       "uploader": {
         "login": "dominitriks",
@@ -101,15 +101,15 @@
       },
       "content_type": "application/zip",
       "state": "uploaded",
-      "size": 2674909,
-      "digest": "sha256:3f5a565f1157ea957d07c5d2476883b5670779e945b2d7b1f33f70a2f37c9d72",
-      "download_count": 1,
-      "created_at": "2026-10-11T15:45:02Z",
-      "updated_at": "2026-10-11T15:45:04Z",
-      "browser_download_url": "https://github.com/dominitriks/dominixradio/releases/download/v1.1.0/Dominix-v1.1.0.zip"
+      "size": 2754804,
+      "digest": "sha256:008f3a0d589c6111f3b2a4ce311c0687c486f23f346f51c7f5f19face70c38a8",
+      "download_count": 0,
+      "created_at": "2026-10-11T16:32:41Z",
+      "updated_at": "2026-10-11T16:32:44Z",
+      "browser_download_url": "https://github.com/dominitriks/dominixradio/releases/download/v1.3.0/Dominix-v1.3.0.zip"
     }
   ],
-  "tarball_url": "https://api.github.com/repos/dominitriks/dominixradio/tarball/v1.1.0",
-  "zipball_url": "https://api.github.com/repos/dominitriks/dominixradio/zipball/v1.1.0",
-  "body": "## What's new\n- **Sleep timer** (15 min – 2 h): fades out and pauses, works with the app closed\n- **Last station restored** when you reopen the app — one tap to continue\n- **Favorites | Recently played** switch\n- Catalog: sort by popularity or name, station counts per category, \"Clear filters\"\n- Redesigned player: LIVE / CONNECTING / PAUSED / ERROR badge, landscape layout; multi-column layout on tablets\n- Background status in Settings (Android restriction, battery optimization, Xiaomi Autostart) and a warning when Android blocks background playback\n- Better TalkBack accessibility\n\n## Download\n- **Dominix-v1.1.0.apk** — install directly (Android 7.0+)\n- **Dominix-v1.1.0.zip** — same APK in a ZIP, for browsers that hang on APK downloads (e.g. Brave on Xiaomi)\n\nInstalls over earlier versions — favorites and settings are kept.\n\n**Xiaomi / Redmi / POCO:** Settings → Apps → Dominix → Battery saver → *No restrictions*, and enable *Autostart* (also reachable from Dominix → Settings).\n\n© 2026 Dominantus. All rights reserved.\n\nSHA-256 (APK): `8963ad0ecef785d357b5c33becdae206133b11753987dbaa130677a1c98edacf`\n"
+  "tarball_url": "https://api.github.com/repos/dominitriks/dominixradio/tarball/v1.3.0",
+  "zipball_url": "https://api.github.com/repos/dominitriks/dominixradio/zipball/v1.3.0",
+  "body": "## What's new\n- **Listening statistics:** total, today, last 7 days, this month, most listened station, top 5, sessions, 14-day chart and history. Only time when audio really plays is counted; data stays on your phone and can be deleted.\n- **Share a station** with any app, or show a **QR code** (points to the official DOMINIX download page) — share it or save it to the gallery.\n- **Report a problem** with a station (reason + optional description) via GitHub, any app, or copy the text.\n- **Check station:** test whether a station's stream answers, without stopping what is playing.\n- Station actions: tap ⋮ in the player or long-press a station.\n\n## Download\n- **Dominix-v1.3.0.apk** — install directly (Android 7.0+)\n- **Dominix-v1.3.0.zip** — same APK in a ZIP, for browsers that hang on APK downloads (e.g. Brave on Xiaomi)\n\nInstalls over earlier versions — favorites and settings are kept. Users of v1.2.0 will also be told about this update inside the app.\n\n**Xiaomi / Redmi / POCO:** Settings → Apps → Dominix → Battery saver → *No restrictions*, and enable *Autostart*.\n\n© 2026 Dominantus. All rights reserved.\n\nSHA-256 (APK): `49c5eba433def7160f71a80925601a5d6eccc0cbe5a6d140a157a9416232a002`\n"
 }

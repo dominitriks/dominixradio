@@ -11,6 +11,9 @@ import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.data.repository.UpdateResult
+import com.bgradio.app.data.repository.DownloadState
+import com.bgradio.app.data.model.ReleaseInfo
+import kotlinx.coroutines.delay
 import com.bgradio.app.data.repository.CheckResult
 import com.bgradio.app.share.ReportReason
 import com.bgradio.app.share.StationReport
@@ -115,6 +118,91 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     val updateDialog: StateFlow<UpdateUi.Result?> = _updateDialog.asStateFlow()
 
     val installedVersion: String get() = updates.installedVersion.toString()
+
+    // ---- In-app update download (DownloadManager → verify → system installer) -------------
+
+    sealed interface UpdateDownloadUi {
+        data object Idle : UpdateDownloadUi
+        data class Downloading(val percent: Int?) : UpdateDownloadUi
+        data object Verifying : UpdateDownloadUi
+        data class Ready(val file: java.io.File) : UpdateDownloadUi
+        data class Failed(val message: String) : UpdateDownloadUi
+        /** Android asks the user once to allow Dominix to install updates. */
+        data object NeedsPermission : UpdateDownloadUi
+    }
+
+    private val downloader = container.downloader
+    private val _download = MutableStateFlow<UpdateDownloadUi>(UpdateDownloadUi.Idle)
+    val download: StateFlow<UpdateDownloadUi> = _download.asStateFlow()
+    private var downloadJob: Job? = null
+    private var downloadId: Long? = null
+
+    fun downloadUpdate(release: ReleaseInfo) {
+        if (_download.value is UpdateDownloadUi.Downloading || _download.value == UpdateDownloadUi.Verifying) return
+        downloadJob?.cancel()
+        downloadJob = viewModelScope.launch {
+            val target = downloader.fileFor(release)
+            // Already downloaded earlier and still valid → straight to install.
+            if (target != null && target.exists() && downloader.verify(target, release) == null) {
+                readyFile = target
+                _download.value = UpdateDownloadUi.Ready(target)
+                return@launch
+            }
+            val id = downloader.start(release)
+            if (id == null || target == null) {
+                _download.value = UpdateDownloadUi.Failed("Свалянето не можа да започне. Опитайте „Отвори в браузъра“.")
+                return@launch
+            }
+            downloadId = id
+            _download.value = UpdateDownloadUi.Downloading(null)
+            while (true) {
+                when (val st = withContext(Dispatchers.IO) { downloader.state(id, target) }) {
+                    is DownloadState.Running -> _download.value = UpdateDownloadUi.Downloading(st.percent)
+                    is DownloadState.Failed -> {
+                        _download.value = UpdateDownloadUi.Failed(st.message)
+                        break
+                    }
+                    is DownloadState.Done -> {
+                        _download.value = UpdateDownloadUi.Verifying
+                        val problem = downloader.verify(st.file, release)
+                        if (problem == null) readyFile = st.file
+                        _download.value = if (problem == null) UpdateDownloadUi.Ready(st.file) else {
+                            st.file.delete()
+                            UpdateDownloadUi.Failed(problem)
+                        }
+                        break
+                    }
+                }
+                delay(500)
+            }
+            downloadId = null
+        }
+    }
+
+    /** The verified file waiting for installation (kept while the user grants permission). */
+    private var readyFile: java.io.File? = null
+
+    /** Opens Android's installer (the user confirms there). */
+    fun installUpdate() {
+        val file = readyFile?.takeIf { it.exists() } ?: return
+        if (!downloader.canInstall()) {
+            _download.value = UpdateDownloadUi.NeedsPermission
+            return
+        }
+        _download.value = UpdateDownloadUi.Ready(file)
+        if (!downloader.install(file)) {
+            _download.value = UpdateDownloadUi.Failed("Инсталаторът на Android не можа да се отвори.")
+        }
+    }
+
+    fun openInstallPermissionSettings() = downloader.openInstallPermissionSettings()
+
+    fun cancelUpdateDownload() {
+        downloadJob?.cancel()
+        downloadId?.let(downloader::cancel)
+        downloadId = null
+        _download.value = UpdateDownloadUi.Idle
+    }
 
     fun checkForUpdates(manual: Boolean) {
         if (_update.value == UpdateUi.Checking) return

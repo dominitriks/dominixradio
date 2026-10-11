@@ -6,10 +6,12 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -18,7 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.bgradio.app.data.model.AppInfo
+import com.bgradio.app.data.model.ReleaseInfo
 import com.bgradio.app.data.repository.UpdateResult
+import com.bgradio.app.ui.MainViewModel
 
 /**
  * Result of an update check. For a new version it shows the number, the release notes and a
@@ -26,7 +30,16 @@ import com.bgradio.app.data.repository.UpdateResult
  * installed without the user doing it.
  */
 @Composable
-fun UpdateDialog(result: UpdateResult, installed: String, onDismiss: (rememberVersion: Boolean) -> Unit) {
+fun UpdateDialog(
+    result: UpdateResult,
+    installed: String,
+    download: MainViewModel.UpdateDownloadUi,
+    onDownload: (ReleaseInfo) -> Unit,
+    onInstall: () -> Unit,
+    onOpenInstallSettings: () -> Unit,
+    onCancelDownload: () -> Unit,
+    onDismiss: (rememberVersion: Boolean) -> Unit,
+) {
     val context = LocalContext.current
     when (result) {
         is UpdateResult.Available -> {
@@ -35,7 +48,7 @@ fun UpdateDialog(result: UpdateResult, installed: String, onDismiss: (rememberVe
                 onDismissRequest = { onDismiss(false) },
                 title = { Text("Нова версия: ${r.version}") },
                 text = {
-                    Column(Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState())) {
+                    Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState())) {
                         Text(
                             "Инсталирана версия: $installed",
                             style = MaterialTheme.typography.bodySmall,
@@ -48,27 +61,35 @@ fun UpdateDialog(result: UpdateResult, installed: String, onDismiss: (rememberVe
                             Text(r.notes, style = MaterialTheme.typography.bodyMedium)
                             Spacer(Modifier.height(12.dp))
                         }
-                        Text(
-                            if (r.apkUrl != null) {
-                                "„Изтегли APK“ отваря файла (${formatSize(r.apkSizeBytes)}) в браузъра. " +
-                                    "След изтеглянето го отворете и потвърдете инсталирането. " +
-                                    "Любимите и настройките се запазват."
-                            } else {
-                                "Тази версия няма прикачен APK файл. Отворете страницата на версията в GitHub."
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        DownloadStatus(download, r)
+                        if (r.apkUrl != null) {
+                            TextButton(onClick = { openUrl(context, r.apkUrl) }) { Text("Отвори в браузъра") }
+                        }
                     }
                 },
                 confirmButton = {
-                    TextButton(onClick = {
-                        openUrl(context, r.apkUrl ?: r.pageUrl)
-                        onDismiss(false)
-                    }) { Text(if (r.apkUrl != null) "Изтегли APK" else "Към GitHub") }
+                    when {
+                        r.apkUrl == null -> TextButton(onClick = {
+                            openUrl(context, r.pageUrl)
+                            onDismiss(false)
+                        }) { Text("Към GitHub") }
+                        download is MainViewModel.UpdateDownloadUi.Ready ||
+                            download is MainViewModel.UpdateDownloadUi.NeedsPermission ->
+                            TextButton(onClick = onInstall) { Text("Инсталирай") }
+                        download is MainViewModel.UpdateDownloadUi.Downloading ||
+                            download is MainViewModel.UpdateDownloadUi.Verifying ->
+                            TextButton(onClick = onCancelDownload) { Text("Отказ") }
+                        else -> TextButton(onClick = { onDownload(r) }) {
+                            Text(if (download is MainViewModel.UpdateDownloadUi.Failed) "Опитай отново" else "Изтегли и инсталирай")
+                        }
+                    }
                 },
                 dismissButton = {
-                    TextButton(onClick = { onDismiss(true) }) { Text("По-късно") }
+                    if (download is MainViewModel.UpdateDownloadUi.NeedsPermission) {
+                        TextButton(onClick = onOpenInstallSettings) { Text("Към настройката") }
+                    } else {
+                        TextButton(onClick = { onDismiss(download is MainViewModel.UpdateDownloadUi.Idle) }) { Text("По-късно") }
+                    }
                 },
             )
         }
@@ -105,3 +126,42 @@ internal fun openUrl(context: Context, url: String) {
 
 private fun formatSize(bytes: Long): String =
     if (bytes <= 0) "APK" else "%.1f MB".format(bytes / 1_048_576.0).replace('.', ',')
+
+@Composable
+private fun DownloadStatus(download: MainViewModel.UpdateDownloadUi, r: ReleaseInfo) {
+    val muted = MaterialTheme.colorScheme.onSurfaceVariant
+    when (download) {
+        MainViewModel.UpdateDownloadUi.Idle -> Text(
+            if (r.apkUrl != null) {
+                "Dominix ще изтегли файла (${formatSize(r.apkSizeBytes)}), ще провери, че е непокътнат, и ще отвори " +
+                    "инсталатора на Android, където потвърждавате. Любимите и настройките се запазват."
+            } else {
+                "Тази версия няма прикачен APK файл. Отворете страницата на версията в GitHub."
+            },
+            style = MaterialTheme.typography.bodySmall,
+            color = muted,
+        )
+        is MainViewModel.UpdateDownloadUi.Downloading -> Column {
+            Text("Изтегляне… ${download.percent?.let { "$it%" } ?: ""}", style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(6.dp))
+            if (download.percent != null) {
+                LinearProgressIndicator(progress = { download.percent / 100f }, modifier = Modifier.fillMaxWidth())
+            } else {
+                LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            }
+            Text("Можете да затворите прозореца — свалянето продължава в известията.", style = MaterialTheme.typography.bodySmall, color = muted)
+        }
+        MainViewModel.UpdateDownloadUi.Verifying -> Text("Проверка на файла…", style = MaterialTheme.typography.bodyMedium)
+        is MainViewModel.UpdateDownloadUi.Ready -> Text(
+            "Файлът е изтеглен и проверен ✓. Натиснете „Инсталирай“ и потвърдете в прозореца на Android.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
+        MainViewModel.UpdateDownloadUi.NeedsPermission -> Text(
+            "Android трябва еднократно да разреши на Dominix да инсталира обновления. Натиснете „Към настройката“, " +
+                "включете „Разрешаване от този източник“, върнете се и натиснете „Инсталирай“.",
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        is MainViewModel.UpdateDownloadUi.Failed -> Text(download.message, color = MaterialTheme.colorScheme.error)
+    }
+}

@@ -94,7 +94,19 @@ fun AppRoot(vm: MainViewModel) {
     }
 
     val updateDialog by vm.updateDialog.collectAsStateWithLifecycle()
-    updateDialog?.let { UpdateDialog(it.result, vm.installedVersion, vm::dismissUpdateDialog) }
+    val download by vm.download.collectAsStateWithLifecycle()
+    updateDialog?.let {
+        UpdateDialog(
+            result = it.result,
+            installed = vm.installedVersion,
+            download = download,
+            onDownload = vm::downloadUpdate,
+            onInstall = vm::installUpdate,
+            onOpenInstallSettings = { vm.openInstallPermissionSettings() },
+            onCancelDownload = vm::cancelUpdateDownload,
+            onDismiss = vm::dismissUpdateDialog,
+        )
+    }
     StationActionsHost(vm)
 
     Scaffold(

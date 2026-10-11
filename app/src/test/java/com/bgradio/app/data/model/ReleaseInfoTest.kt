@@ -11,7 +11,7 @@ import org.junit.Test
 
 class ReleaseInfoTest {
 
-    /** Real response of GET /repos/dominitriks/dominixradio/releases/latest (v1.1.0). */
+    /** Real response of GET /repos/dominitriks/dominixradio/releases/latest (v1.3.0, with asset digests). */
     private val realJson = javaClass.classLoader!!.getResource("github_release_latest.json")!!.readText()
 
     @Test
@@ -28,12 +28,14 @@ class ReleaseInfoTest {
     fun parsesRealGitHubRelease() {
         val r = ReleaseInfo.parse(realJson)
         assertNotNull(r)
-        assertEquals("1.1.0", r!!.version.toString())
-        assertEquals("Dominix v1.1.0", r.title)
-        assertEquals("https://github.com/dominitriks/dominixradio/releases/download/v1.1.0/Dominix-v1.1.0.apk", r.apkUrl)
+        assertEquals("1.3.0", r!!.version.toString())
+        assertEquals("Dominix v1.3.0", r.title)
+        assertEquals("https://github.com/dominitriks/dominixradio/releases/download/v1.3.0/Dominix-v1.3.0.apk", r.apkUrl)
         assertTrue(r.apkSizeBytes > 1_000_000)
         // Markdown cleaned, checksum line dropped
-        assertTrue(r.notes.contains("Sleep timer"))
+        assertTrue(r.notes.contains("Listening statistics"))
+        // GitHub's published checksum of exactly this APK
+        assertEquals("49c5eba433def7160f71a80925601a5d6eccc0cbe5a6d140a157a9416232a002", r.apkSha256)
         assertFalse(r.notes.contains("**"))
         assertFalse(r.notes.contains("SHA-256"))
     }
@@ -41,9 +43,9 @@ class ReleaseInfoTest {
     @Test
     fun newerReleaseIsOfferedOlderOrSameIsNot() {
         val r = ReleaseInfo.parse(realJson)
-        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.0.1")!!) is UpdateResult.Available)
-        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.1.0")!!) is UpdateResult.UpToDate)
-        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.2.0")!!) is UpdateResult.UpToDate)
+        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.2.0")!!) is UpdateResult.Available)
+        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.3.0")!!) is UpdateResult.UpToDate)
+        assertTrue(UpdateRepository.evaluate(r, AppVersion.parse("1.3.1")!!) is UpdateResult.UpToDate)
     }
 
     @Test
@@ -69,5 +71,19 @@ class ReleaseInfoTest {
                 {"name":"Dominix-v2.0.0.apk","browser_download_url":"https://x/release.apk","size":3}]}"""
         )!!
         assertEquals("https://x/release.apk", both.apkUrl)
+    }
+
+    @Test
+    fun invalidDigestIsIgnored() {
+        val r = ReleaseInfo.parse(
+            """{"tag_name":"v2.0.0","assets":[{"name":"D.apk","browser_download_url":"https://x/D.apk","digest":"md5:abc"}]}"""
+        )!!
+        assertNull(r.apkSha256)
+    }
+
+    @Test
+    fun sha256OfFileMatchesKnownValue() {
+        val f = java.io.File.createTempFile("dominix", ".bin").apply { writeText("abc"); deleteOnExit() }
+        assertEquals("ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", com.bgradio.app.data.repository.UpdateDownloader.sha256(f))
     }
 }

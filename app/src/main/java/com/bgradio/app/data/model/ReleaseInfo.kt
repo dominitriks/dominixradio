@@ -34,6 +34,8 @@ data class ReleaseInfo(
     /** Direct link to the release APK, or null if the release has no APK asset. */
     val apkUrl: String?,
     val apkSizeBytes: Long,
+    /** SHA-256 of the APK as published by GitHub (asset "digest"), lowercase hex; null if absent. */
+    val apkSha256: String? = null,
 ) {
     companion object {
         /** Parses GitHub's `releases/latest` JSON. Returns null for anything unusable. */
@@ -57,6 +59,10 @@ data class ReleaseInfo(
                         pageUrl = o.optString("html_url").ifBlank { AppInfo.RELEASES_URL },
                         apkUrl = apk?.optString("browser_download_url")?.takeIf { u -> u.startsWith("https://") },
                         apkSizeBytes = apk?.optLong("size") ?: 0L,
+                        apkSha256 = apk?.optString("digest")
+                            ?.takeIf { d -> d.startsWith("sha256:", ignoreCase = true) }
+                            ?.substringAfter(':')?.lowercase()
+                            ?.takeIf { h -> h.length == 64 && h.all { c -> c in '0'..'9' || c in 'a'..'f' } },
                     )
                 }
             }

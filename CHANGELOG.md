@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.1] — 2026-10-12
+
+### Fixed
+- **In-app update stuck at 100 %.** "Download" used to open the APK link in the default browser, and some browsers (e.g. Brave on Xiaomi) hold APK files at 100 % forever. Dominix now downloads the update itself with Android's download manager (progress in the dialog and in notifications), verifies it (GitHub SHA-256 checksum, package name, version) and opens Android's installer — you still confirm the installation there. Android asks once to allow Dominix to install updates. "Open in browser" remains as a fallback.
+
 ## [1.3.0] — 2026-10-12
 
 ### Added

@@ -8,6 +8,7 @@ import coil.disk.DiskCache
 import coil.memory.MemoryCache
 import com.bgradio.app.data.repository.StationRepository
 import com.bgradio.app.data.repository.StreamChecker
+import com.bgradio.app.data.repository.UpdateDownloader
 import com.bgradio.app.data.stats.StatsRepository
 import java.io.File
 import com.bgradio.app.data.repository.UpdateRepository
@@ -23,6 +24,7 @@ class AppContainer(context: Context) {
     val player = PlayerConnection(context, stations)
     val updates = UpdateRepository(network)
     val checker = StreamChecker(network)
+    val downloader = UpdateDownloader(context)
     val stats = StatsRepository(File(context.filesDir, "listening_stats.json"))
 }
 

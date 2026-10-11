@@ -2,4 +2,6 @@
 <!-- Only the QR images Dominix creates for sharing are exposed. -->
 <paths>
     <cache-path name="qr" path="qr/" />
+    <!-- Downloaded Dominix updates, handed to the system installer. -->
+    <external-files-path name="updates" path="Download/" />
 </paths>
