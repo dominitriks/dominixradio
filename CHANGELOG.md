@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.3.2] — 2026-10-12
+
+### Added
+- **"Сподели DOMINIX"** (Settings → Information): recommend the app to friends through the Android share sheet with the official download link.
+
 ## [1.3.1] — 2026-10-12
 
 ### Fixed
