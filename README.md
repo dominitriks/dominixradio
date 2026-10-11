@@ -104,8 +104,8 @@ the app downloads it at most once a day (or when *Каталог на станц
 Requirements: JDK 17 and the Android SDK (platform 35). Create `local.properties` with `sdk.dir=<path to Android SDK>`.
 
 ```bash
-./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.5.1-release.apk
-./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.5.1-debug.apk
+./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.5.2-release.apk
+./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.5.2-debug.apk
 ```
 
 Release signing reads `keystore.properties` (not committed):

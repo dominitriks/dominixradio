@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.5.2] — 2026-10-12
+
+### Added
+- Discreet "Рекламирай в DOMINIX" link at the bottom of the home screen (above "Created by Dominantus"), opening the existing advertise page.
+
 ## [1.5.1] — 2026-10-12
 
 ### Added
