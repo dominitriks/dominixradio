@@ -3,6 +3,7 @@ package com.bgradio.app.player
 import android.content.ComponentName
 import android.content.Context
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import androidx.annotation.OptIn
 import androidx.core.content.ContextCompat
@@ -36,6 +37,11 @@ data class PlayerUiState(
     val volume: Float = 1f,
     /** elapsedRealtime when the sleep timer stops playback; null when off. */
     val sleepEndsAt: Long? = null,
+    /**
+     * Stations that failed a real playback attempt recently (30 min), by id. Cleared as soon as
+     * the station plays again. Never filled by background probing.
+     */
+    val issues: Map<String, StationIssue> = emptyMap(),
 ) {
     val isLoading: Boolean get() = playWhenReady && (isBuffering || reconnectMessage != null) && !isPlaying
     val hasStation: Boolean get() = station != null
@@ -58,6 +64,15 @@ class PlayerConnection(
      * was playing before the service released itself). Play starts it with [restoreQueue].
      */
     private var lastStation: Station? = null
+
+    /** stationId -> (issue, elapsedRealtime when it happened). */
+    private val issueLog = HashMap<String, Pair<StationIssue, Long>>()
+
+    private fun currentIssues(): Map<String, StationIssue> {
+        val now = SystemClock.elapsedRealtime()
+        issueLog.entries.removeAll { now - it.value.second > ISSUE_TTL_MS }
+        return issueLog.mapValues { it.value.first }
+    }
     private var restoreQueue: List<Station> = emptyList()
 
     private var future: ListenableFuture<MediaController>? = null
@@ -195,6 +210,9 @@ class PlayerConnection(
         val id = c.currentMediaItem?.mediaId
         val station = stations.find(id)
         if (station != null) lastStation = station
+        if (station != null && c.isPlaying && issueLog.remove(station.id) != null) {
+            _state.update { it.copy(issues = currentIssues()) }
+        }
         // The service puts the current song (if the stream sends one) into "artist".
         val song = c.mediaMetadata.artist?.toString()
         _state.update {
@@ -215,6 +233,15 @@ class PlayerConnection(
         val status = extras.getString(PlayerContract.EXTRA_STATUS) ?: return
         val message = extras.getString(PlayerContract.EXTRA_MESSAGE)
         val seq = extras.getInt(PlayerContract.EXTRA_SEQ)
+        if (status == PlayerContract.STATUS_ERROR) {
+            val id = extras.getString(PlayerContract.EXTRA_STATION_ID)
+            val issue = extras.getString(PlayerContract.EXTRA_ISSUE)
+                ?.let { name -> runCatching { StationIssue.valueOf(name) }.getOrNull() }
+            if (id != null && issue != null && issue != StationIssue.OFFLINE) {
+                issueLog[id] = issue to SystemClock.elapsedRealtime()
+            }
+        }
+        val issues = currentIssues()
         _state.update {
             when (status) {
                 PlayerContract.STATUS_RECONNECTING -> it.copy(
@@ -224,6 +251,7 @@ class PlayerConnection(
                 )
 
                 PlayerContract.STATUS_ERROR -> it.copy(
+                    issues = issues,
                     reconnectMessage = null,
                     errorMessage = message ?: PlaybackErrors.CONNECT_FAILED,
                     errorSeq = seq,
@@ -253,7 +281,11 @@ class PlayerConnection(
         }
     }
 
+    /** Manual "Try again" after an error: starts the current station from its primary address. */
+    fun retry() = resume()
+
     private companion object {
         const val TAG = "PlayerConnection"
+        const val ISSUE_TTL_MS = 30 * 60_000L
     }
 }

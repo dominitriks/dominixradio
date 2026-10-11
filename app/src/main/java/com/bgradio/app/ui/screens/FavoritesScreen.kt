@@ -120,6 +120,7 @@ internal fun StationGrid(
                 onFavorite = { vm.toggleFavorite(s.id) },
                 onOpen = onOpenPlayer,
                 modifier = Modifier.animateItem(),
+                issue = player.issues[s.id],
             )
         }
     }

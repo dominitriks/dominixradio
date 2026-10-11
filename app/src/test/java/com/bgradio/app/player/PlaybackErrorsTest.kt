@@ -36,4 +36,16 @@ class PlaybackErrorsTest {
         assertFalse(PlaybackErrors.isRecoverable(error(PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED)))
         assertFalse(PlaybackErrors.isRecoverable(error(PlaybackException.ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED)))
     }
+
+    @Test
+    fun issueClassification() {
+        // No internet is never blamed on the station.
+        assertEquals(StationIssue.OFFLINE, PlaybackErrors.issue(error(PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND), online = false))
+        assertEquals(StationIssue.BROKEN, PlaybackErrors.issue(error(PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND), true))
+        assertEquals(StationIssue.BROKEN, PlaybackErrors.issue(error(PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED), true))
+        assertEquals(StationIssue.UNAVAILABLE, PlaybackErrors.issue(error(PlaybackException.ERROR_CODE_IO_NETWORK_CONNECTION_TIMEOUT), true))
+        assertEquals(StationIssue.UNAVAILABLE, PlaybackErrors.issue(error(PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS), true))
+        // Stream closed by the server (no exception) = temporarily unavailable
+        assertEquals(StationIssue.UNAVAILABLE, PlaybackErrors.issue(null, true))
+    }
 }

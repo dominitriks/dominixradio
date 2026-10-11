@@ -6,6 +6,7 @@ import androidx.media3.common.ForwardingPlayer
 import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
+import com.bgradio.app.player.TrackInfo
 
 /**
  * Radio-specific behaviour on top of ExoPlayer:
@@ -59,17 +60,24 @@ class RadioPlayer(
     }
 
     /**
-     * Streams send the current song (ICY metadata) as "title". Keep the station name as the
-     * title in the notification / lock screen and show the song as the subtitle instead.
+     * Streams send the current song (ICY StreamTitle / HLS ID3) as "title" (and sometimes
+     * "artist"). Keep the station name as the title in the notification / lock screen and show the
+     * song as the subtitle — but only when [TrackInfo] considers it real track information.
+     * Artwork always stays the station logo (no covers from the stream).
      */
     override fun getMediaMetadata(): MediaMetadata {
         val live = super.getMediaMetadata()
         val item = currentMediaItem?.mediaMetadata ?: return live
-        val song = live.title?.toString()?.takeIf { it.isNotBlank() && it != item.title?.toString() }
+        val stationName = item.title?.toString().orEmpty()
+        val streamTitle = live.title?.toString()?.takeIf { it != stationName }
+        val streamArtist = live.artist?.toString()?.takeIf { it != item.artist?.toString() }
+        val track = TrackInfo.parse(streamTitle, streamArtist, stationName)
         return live.buildUpon()
             .setTitle(item.title)
             .setDisplayTitle(item.title)
-            .setArtist(song ?: item.artist)
+            .setArtist(track?.display ?: item.artist)
+            .setArtworkData(null, null)
+            .setArtworkUri(item.artworkUri)
             .build()
     }
 

@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.player.PlayerUiState
+import com.bgradio.app.player.StationIssue
 
 /** What a given card should show, derived from the global player state. */
 data class StationPlayback(val isCurrent: Boolean, val button: PlayButtonState, val isPlaying: Boolean)
@@ -62,6 +63,7 @@ fun StationCard(
     onFavorite: () -> Unit,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
+    issue: StationIssue? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -112,6 +114,14 @@ fun StationCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                if (issue != null && !playback.isPlaying) {
+                    Text(
+                        "⚠ ${issue.label}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (issue == StationIssue.BROKEN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
                 AnimatedVisibility(playback.isCurrent, enter = fadeIn(), exit = fadeOut()) {
                     Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         EqualizerBars(animate = playback.isPlaying)

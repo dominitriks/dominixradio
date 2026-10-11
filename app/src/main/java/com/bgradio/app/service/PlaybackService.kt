@@ -112,6 +112,7 @@ class PlaybackService : MediaLibraryService() {
     private var lastMessage: String? = null
     private var lastAttempt = 0
     private var lastMaxAttempts = 0
+    private var lastIssue: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -213,6 +214,7 @@ class PlaybackService : MediaLibraryService() {
 
     private fun checkCanPlay(): Boolean {
         if (settings.wifiOnly && !container.network.isOnWifi()) {
+            lastIssue = null // not the station's fault
             publishStatus(PlayerContract.STATUS_ERROR, PlaybackErrors.WIFI_ONLY)
             return false
         }
@@ -363,10 +365,13 @@ class PlaybackService : MediaLibraryService() {
         // Put the primary URL back so a later Play starts clean.
         exoPlayer.replaceMediaItem(exoPlayer.currentMediaItemIndex, StationMediaItems.withUrl(item, station.streamUrl))
         exoPlayer.playWhenReady = false
-        publishStatus(PlayerContract.STATUS_ERROR, PlaybackErrors.message(error, container.network.isOnline()))
+        val online = container.network.isOnline()
+        lastIssue = PlaybackErrors.issue(error, online).name
+        publishStatus(PlayerContract.STATUS_ERROR, PlaybackErrors.message(error, online))
     }
 
     private fun publishStatus(status: String, message: String? = null, attempt: Int = 0, max: Int = 0) {
+        if (status != PlayerContract.STATUS_ERROR) lastIssue = null
         lastStatus = status
         lastMessage = message
         lastAttempt = attempt
@@ -384,6 +389,7 @@ class PlaybackService : MediaLibraryService() {
             putInt(PlayerContract.EXTRA_MAX_ATTEMPTS, lastMaxAttempts)
             putString(PlayerContract.EXTRA_STATION_ID, currentStationId)
             putInt(PlayerContract.EXTRA_SEQ, statusSeq)
+            lastIssue?.let { putString(PlayerContract.EXTRA_ISSUE, it) }
             sleepTimer.endsAt?.let { putLong(PlayerContract.EXTRA_SLEEP_ENDS_AT, it) }
         }
         session?.setSessionExtras(extras)

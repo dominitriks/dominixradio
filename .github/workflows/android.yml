@@ -1,0 +1,116 @@
+# Builds Dominix on GitHub's servers.
+#
+#  - Every push / pull request to main: unit tests + lint + debug APK (as a downloadable artifact).
+#  - Manually ("Run workflow") or when a tag like v1.2.0 is pushed: also a release APK artifact.
+#
+# This workflow NEVER publishes a GitHub Release — it only produces files you can download from
+# the run page. Publishing stays a manual decision.
+#
+# Release signing (optional) uses repository secrets — nothing secret is stored in the repo:
+#   KEYSTORE_BASE64     base64 of bgradio-release.jks
+#   KEYSTORE_PASSWORD   store password   (storePassword in keystore.properties)
+#   KEY_ALIAS           key alias        (keyAlias)
+#   KEY_PASSWORD        key password     (keyPassword)
+# Without them the release APK is signed with a temporary debug key and CANNOT be installed
+# over the official Dominix APK.
+
+name: Android build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Tests, lint, debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Unit tests, lint and debug build
+        run: ./gradlew --no-daemon testDebugUnitTest lintDebug assembleDebug
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dominix-debug-apk
+          path: app/build/outputs/apk/debug/*.apk
+          retention-days: 14
+
+      - name: Upload test and lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            app/build/reports/
+            app/build/test-results/
+          retention-days: 14
+
+  release-apk:
+    name: Release APK (artifact only)
+    needs: check
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Prepare signing key from secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+            echo "::warning::Signing secrets are not set — the release APK will be signed with a debug key and cannot update the official app."
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > bgradio-release.jks
+          {
+            echo "storeFile=bgradio-release.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > keystore.properties
+
+      - name: Build release APK
+        run: ./gradlew --no-daemon assembleRelease
+
+      - name: Remove signing files
+        if: always()
+        run: rm -f bgradio-release.jks keystore.properties
+
+      - name: Upload release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: dominix-release-apk
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 30

@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -56,6 +57,20 @@ class UserPreferencesRepository(context: Context) {
         }
     }
 
+    /** Wall-clock ms of the last automatic update check (0 = never). */
+    val lastUpdateCheck: Flow<Long> = data.map { it[LAST_UPDATE_CHECK] ?: 0L }.distinctUntilChanged()
+
+    /** Version the user chose "Later" for — not offered again automatically. */
+    val dismissedUpdate: Flow<String?> = data.map { it[DISMISSED_UPDATE] }.distinctUntilChanged()
+
+    suspend fun setLastUpdateCheck(ms: Long) {
+        store.edit { it[LAST_UPDATE_CHECK] = ms }
+    }
+
+    suspend fun setDismissedUpdate(version: String) {
+        store.edit { it[DISMISSED_UPDATE] = version }
+    }
+
     suspend fun setThemeMode(mode: ThemeMode) {
         store.edit { it[THEME] = mode.name }
     }
@@ -76,5 +91,7 @@ class UserPreferencesRepository(context: Context) {
         val THEME = stringPreferencesKey("theme_mode")
         val WIFI_ONLY = booleanPreferencesKey("wifi_only")
         val AUTO_RECONNECT = booleanPreferencesKey("auto_reconnect")
+        val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check")
+        val DISMISSED_UPDATE = stringPreferencesKey("dismissed_update")
     }
 }

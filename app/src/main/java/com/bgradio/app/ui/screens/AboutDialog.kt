@@ -3,6 +3,7 @@ package com.bgradio.app.ui.screens
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,10 +28,16 @@ import com.bgradio.app.BuildConfig
 import com.bgradio.app.R
 
 @Composable
-fun AboutDialog(stationCount: Int, onDismiss: () -> Unit) {
+fun AboutDialog(stationCount: Int, onDismiss: () -> Unit, onFeedback: () -> Unit = {}, onPrivacy: () -> Unit = {}) {
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = { TextButton(onClick = onDismiss) { Text("Затвори") } },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onPrivacy) { Text("Поверителност") }
+                TextButton(onClick = onFeedback) { Text("Обратна връзка") }
+            }
+        },
         title = { Text("За приложението") },
         text = {
             Column(

@@ -23,10 +23,13 @@ import androidx.compose.material.icons.rounded.BatterySaver
 import androidx.compose.material.icons.rounded.BrightnessAuto
 import androidx.compose.material.icons.rounded.PlayCircle
 import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.Feedback
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.PrivacyTip
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Numbers
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -54,6 +57,7 @@ import com.bgradio.app.BuildConfig
 import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.ui.MainViewModel
+import com.bgradio.app.data.repository.UpdateResult
 import com.bgradio.app.utils.BackgroundStatus
 
 @Composable
@@ -61,6 +65,8 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
     val settings = vm.settings.collectAsStateWithLifecycle().value ?: AppSettings()
     val stations by vm.stations.collectAsStateWithLifecycle()
     var showAbout by rememberSaveable { mutableStateOf(false) }
+    var showFeedback by rememberSaveable { mutableStateOf(false) }
+    var showPrivacy by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
 
     Column(
@@ -133,7 +139,23 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
 
         SettingsGroup("Информация") {
             InfoRow("За приложението", "Dominix · създадено от Dominantus", Icons.Rounded.Info) { showAbout = true }
+            InfoRow("Изпрати обратна връзка", "Проблем или идея — чрез GitHub", Icons.Rounded.Feedback) { showFeedback = true }
+            InfoRow("Поверителност", "Не събираме лични данни", Icons.Rounded.PrivacyTip) { showPrivacy = true }
             InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)
+            val update by vm.update.collectAsStateWithLifecycle()
+            InfoRow(
+                "Проверка за нова версия",
+                when (val u = update) {
+                    MainViewModel.UpdateUi.Checking -> "Проверява се…"
+                    is MainViewModel.UpdateUi.Result -> when (val r = u.result) {
+                        is UpdateResult.Available -> "Налична е версия ${r.release.version}"
+                        is UpdateResult.UpToDate -> "Използвате най-новата версия"
+                        is UpdateResult.Failed -> r.message
+                    }
+                    else -> "Проверява в GitHub Releases"
+                },
+                Icons.Rounded.SystemUpdate,
+            ) { vm.checkForUpdates(manual = true) }
         }
 
         Text(
@@ -145,8 +167,15 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
         )
     }
 
+    if (showFeedback) FeedbackDialog(onDismiss = { showFeedback = false })
+    if (showPrivacy) PrivacyDialog(onDismiss = { showPrivacy = false })
     if (showAbout) {
-        AboutDialog(stationCount = stations.size, onDismiss = { showAbout = false })
+        AboutDialog(
+            stationCount = stations.size,
+            onDismiss = { showAbout = false },
+            onFeedback = { showAbout = false; showFeedback = true },
+            onPrivacy = { showAbout = false; showPrivacy = true },
+        )
     }
 }
 

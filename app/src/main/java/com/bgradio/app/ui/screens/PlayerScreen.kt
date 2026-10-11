@@ -42,6 +42,7 @@ import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.Radio
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
 import androidx.compose.material.icons.rounded.Stop
@@ -51,6 +52,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -319,6 +321,13 @@ private fun ColumnScope.Details(
                 .widthIn(max = 420.dp)
                 .semantics { liveRegion = LiveRegionMode.Polite },
         )
+    }
+    if (state.errorMessage != null) {
+        OutlinedButton(onClick = vm::retry, modifier = Modifier.padding(bottom = 8.dp)) {
+            Icon(Icons.Rounded.Refresh, contentDescription = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Опитай отново")
+        }
     }
     Spacer(Modifier.height(8.dp))
 

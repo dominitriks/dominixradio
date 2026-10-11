@@ -22,6 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -43,6 +44,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bgradio.app.ui.MainViewModel
 import com.bgradio.app.ui.components.MiniPlayer
+import com.bgradio.app.ui.components.UpdateDialog
 import com.bgradio.app.ui.screens.FavoritesScreen
 import com.bgradio.app.ui.screens.HomeScreen
 import com.bgradio.app.ui.screens.PlayerScreen
@@ -83,9 +85,13 @@ fun AppRoot(vm: MainViewModel) {
         val msg = player.errorMessage
         if (player.errorSeq != 0 && player.errorSeq != lastShownError && msg != null) {
             lastShownError = player.errorSeq
-            snackbar.showSnackbar(msg, duration = SnackbarDuration.Long)
+            val result = snackbar.showSnackbar(msg, actionLabel = "Опитай отново", duration = SnackbarDuration.Long)
+            if (result == SnackbarResult.ActionPerformed) vm.retry()
         }
     }
+
+    val updateDialog by vm.updateDialog.collectAsStateWithLifecycle()
+    updateDialog?.let { UpdateDialog(it.result, vm.installedVersion, vm::dismissUpdateDialog) }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },

@@ -88,7 +88,20 @@ class RadioPlayerListenerTest {
         innerListener!!.onMediaMetadataChanged(MediaMetadata.EMPTY)
 
         assertEquals("Радио 1", session.metadata?.title.toString())
-        assertEquals("Artist - Song", session.metadata?.artist.toString())
+        assertEquals("Artist — Song", session.metadata?.artist.toString())
+    }
+
+    @Test
+    fun junkStreamTitleIsNotShown() {
+        val radio = RadioPlayer(fakePlayer, canPlay = { true })
+        val session = RecordingListener()
+        radio.addListener(session)
+
+        icyTitle = "apteka.puls.bg - APTEKI PULS OCTOBER 2026"
+        innerListener!!.onMediaMetadataChanged(MediaMetadata.EMPTY)
+
+        assertEquals("Радио 1", session.metadata?.title.toString())
+        assertEquals("Хитове · София", session.metadata?.artist.toString()) // falls back to genre · city
     }
 
     @Test

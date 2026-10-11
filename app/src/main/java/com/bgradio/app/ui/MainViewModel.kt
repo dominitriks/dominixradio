@@ -10,6 +10,7 @@ import com.bgradio.app.BGRadioApp
 import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.data.model.ThemeMode
+import com.bgradio.app.data.repository.UpdateResult
 import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.utils.SearchUtils
 import com.bgradio.app.utils.StationSort
@@ -31,6 +32,50 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     private val stationRepo = container.stations
     private val prefs = container.prefs
     private val player = container.player
+    private val updates = container.updates
+
+    // ---- Update check (GitHub Releases) ---------------------------------------------------
+
+    sealed interface UpdateUi {
+        data object Idle : UpdateUi
+        data object Checking : UpdateUi
+        data class Result(val result: UpdateResult, val manual: Boolean) : UpdateUi
+    }
+
+    private val _update = MutableStateFlow<UpdateUi>(UpdateUi.Idle)
+    val update: StateFlow<UpdateUi> = _update.asStateFlow()
+
+    /** Shown as a dialog: a new version found automatically, or any result of a manual check. */
+    private val _updateDialog = MutableStateFlow<UpdateUi.Result?>(null)
+    val updateDialog: StateFlow<UpdateUi.Result?> = _updateDialog.asStateFlow()
+
+    val installedVersion: String get() = updates.installedVersion.toString()
+
+    fun checkForUpdates(manual: Boolean) {
+        if (_update.value == UpdateUi.Checking) return
+        viewModelScope.launch {
+            _update.value = UpdateUi.Checking
+            val result = updates.check()
+            val ui = UpdateUi.Result(result, manual)
+            _update.value = ui
+            if (!manual && result !is UpdateResult.Failed) prefs.setLastUpdateCheck(System.currentTimeMillis())
+            val dismissed = prefs.dismissedUpdate.first()
+            val show = manual || (result is UpdateResult.Available && result.release.version.toString() != dismissed)
+            if (show) _updateDialog.value = ui
+        }
+    }
+
+    fun dismissUpdateDialog(rememberVersion: Boolean) {
+        val r = (_updateDialog.value?.result as? UpdateResult.Available)?.release
+        if (rememberVersion && r != null) viewModelScope.launch { prefs.setDismissedUpdate(r.version.toString()) }
+        _updateDialog.value = null
+    }
+
+    /** At most one automatic check per day, only when the app is opened. */
+    private suspend fun maybeAutoCheckUpdates() {
+        val last = prefs.lastUpdateCheck.first()
+        if (System.currentTimeMillis() - last > 24 * 60 * 60 * 1000L) checkForUpdates(manual = false)
+    }
 
     private val _stations = MutableStateFlow<List<Station>>(emptyList())
     val stations: StateFlow<List<Station>> = _stations.asStateFlow()
@@ -93,6 +138,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
             // Show the last listened station on start (paused), ready to continue with one tap.
             val lastId = prefs.recent.first().firstOrNull()
             stationRepo.find(lastId)?.let { player.restoreLastStation(it, all) }
+            maybeAutoCheckUpdates()
         }
     }
 
@@ -130,6 +176,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     }
 
     fun resume() = player.resume()
+    fun retry() = player.retry()
     fun pause() = player.pause()
     fun stop() = player.stop()
     fun next() = player.next()

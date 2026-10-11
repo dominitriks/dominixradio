@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0] — 2026-10-11
+
+### Added
+- **Song info you can trust:** artist and title are shown only when the stream sends real track data. Ads with web addresses, station slogans, empty titles, codes and broken encodings are filtered out (tested on real titles from the stations). No covers from streams — the station logo stays.
+- **Station status:** a station that failed to play is marked "Temporarily unavailable" or "Stream not working" for 30 minutes (cleared as soon as it plays). Decided only from real playback, never from background probing; no internet is never blamed on the station.
+- **"Try again"** button in the player and in the error message.
+- **Update check** via public GitHub Releases: at most once a day on app start and on demand in Settings. Shows version, release notes and a button to the real APK — nothing is downloaded or installed automatically.
+- **Feedback** (pre-filled GitHub issue, shown before sending) and a **privacy policy** (in app and PRIVACY.md).
+- **GitHub Actions:** tests, lint and debug APK on every push; release APK artifact on demand or on tags. Never publishes a release by itself; signing via repository secrets.
+
 ## [1.1.0] — 2026-10-11
 
 ### Added

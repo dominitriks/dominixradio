@@ -2,8 +2,38 @@ package com.bgradio.app.player
 
 import androidx.media3.common.PlaybackException
 
+/**
+ * Why a station could not be played — decided only from a real playback attempt, never from a
+ * separate "is it alive" HTTP probe (many radio servers reject plain requests but play fine).
+ */
+enum class StationIssue(val label: String) {
+    /** The phone has no internet — not the station's fault, not shown on the station. */
+    OFFLINE("Няма интернет"),
+    /** Timeout, server error, dropped connection: probably temporary. */
+    UNAVAILABLE("Временно недостъпна"),
+    /** Address gone (404), not an audio stream, unsupported format. */
+    BROKEN("Потокът не работи"),
+}
+
 /** Turns Media3 error codes into short, understandable Bulgarian messages. */
 object PlaybackErrors {
+
+    fun issue(error: PlaybackException?, online: Boolean): StationIssue {
+        if (!online) return StationIssue.OFFLINE
+        return when (error?.errorCode) {
+            PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND,
+            PlaybackException.ERROR_CODE_IO_INVALID_HTTP_CONTENT_TYPE,
+            PlaybackException.ERROR_CODE_IO_CLEARTEXT_NOT_PERMITTED,
+            PlaybackException.ERROR_CODE_PARSING_CONTAINER_MALFORMED,
+            PlaybackException.ERROR_CODE_PARSING_MANIFEST_MALFORMED,
+            PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED,
+            PlaybackException.ERROR_CODE_PARSING_MANIFEST_UNSUPPORTED,
+            PlaybackException.ERROR_CODE_DECODING_FORMAT_UNSUPPORTED,
+            PlaybackException.ERROR_CODE_DECODER_INIT_FAILED,
+            PlaybackException.ERROR_CODE_DECODING_FAILED -> StationIssue.BROKEN
+            else -> StationIssue.UNAVAILABLE
+        }
+    }
 
     const val NO_INTERNET = "Няма интернет връзка. Провери интернет връзката си."
     const val CONNECT_FAILED = "Неуспешно свързване с радиостанцията."

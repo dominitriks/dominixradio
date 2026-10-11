@@ -24,6 +24,8 @@ object PlayerContract {
     const val EXTRA_MAX_ATTEMPTS = "max_attempts"
     const val EXTRA_STATION_ID = "station_id"
     const val EXTRA_SEQ = "seq"
+    /** [StationIssue] name for STATUS_ERROR. */
+    const val EXTRA_ISSUE = "issue"
 
     const val STATUS_IDLE = "idle"
     const val STATUS_RECONNECTING = "reconnecting"
