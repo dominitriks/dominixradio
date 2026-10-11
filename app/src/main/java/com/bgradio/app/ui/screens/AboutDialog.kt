@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.screens
 
+import com.bgradio.app.ui.components.BrandSlogan
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,6 +53,9 @@ fun AboutDialog(stationCount: Int, onDismiss: () -> Unit, onFeedback: () -> Unit
                     )
                     Spacer(Modifier.height(8.dp))
                     Text("DOMINIX", style = MaterialTheme.typography.titleLarge)
+                    Spacer(Modifier.height(6.dp))
+                    BrandSlogan(centered = true)
+                    Spacer(Modifier.height(6.dp))
                     Text(
                         "Версия: ${BuildConfig.VERSION_NAME}",
                         style = MaterialTheme.typography.bodyMedium,

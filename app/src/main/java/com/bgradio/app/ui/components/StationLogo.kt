@@ -71,7 +71,12 @@ private fun InitialsTile(station: Station, size: Dp) {
     Box(
         Modifier
             .fillMaxSize()
-            .background(Brush.linearGradient(listOf(base, base.copy(alpha = 0.55f).compositeOver(Color(0xFF101322))))),
+            // Genre tint blended into the dark base so white initials keep ≥ 4.5:1 contrast.
+            .background(
+                Brush.linearGradient(
+                    listOf(base.copy(alpha = 0.7f).compositeOver(Color(0xFF101322)), base.copy(alpha = 0.4f).compositeOver(Color(0xFF101322))),
+                ),
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Text(

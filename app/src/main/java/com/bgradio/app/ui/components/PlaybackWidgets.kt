@@ -32,51 +32,78 @@ import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import com.bgradio.app.ui.theme.Brand
+import com.bgradio.app.ui.theme.DominixTheme
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 enum class PlayButtonState { PLAY, PAUSE, LOADING }
 
+/** Gradient used for the main accent actions (deep purple → deep blue, white content ≥ 4.5:1). */
+val AccentGradient: Brush
+    get() = Brush.linearGradient(listOf(Brand.PurpleDeep, Brand.BlueDeep))
+
+/**
+ * Play / Pause / loading button.
+ * [prominent] = filled brand gradient (main action, or the station that is playing);
+ * otherwise a quiet tonal circle so long lists don't turn into a wall of colour.
+ */
 @Composable
 fun PlayPauseButton(
     state: PlayButtonState,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 48.dp,
-    container: Color = MaterialTheme.colorScheme.primary,
+    prominent: Boolean = true,
 ) {
-    FilledIconButton(
-        onClick = onClick,
-        modifier = modifier.size(size),
-        shape = CircleShape,
-        colors = IconButtonDefaults.filledIconButtonColors(containerColor = container, contentColor = Color.White),
+    val content = if (prominent) Color.White else MaterialTheme.colorScheme.primary
+    val label = when (state) {
+        PlayButtonState.LOADING -> "Свързване, натиснете за пауза"
+        PlayButtonState.PAUSE -> "Пауза"
+        PlayButtonState.PLAY -> "Пусни"
+    }
+    Box(
+        modifier
+            .minimumInteractiveComponentSize() // ≥ 48dp touch area even for the small mini-player button
+            .size(size.coerceAtLeast(40.dp))
+            .clip(CircleShape)
+            .then(
+                if (prominent) Modifier.background(AccentGradient)
+                else Modifier.background(MaterialTheme.colorScheme.surfaceContainerHighest)
+            )
+            .clickable(role = Role.Button, onClickLabel = label, onClick = onClick)
+            .semantics { contentDescription = label },
+        contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(
             targetState = state,
-            transitionSpec = { (scaleIn(tween(180)) + fadeIn()) togetherWith (scaleOut(tween(120)) + fadeOut()) },
+            transitionSpec = { (scaleIn(tween(160)) + fadeIn()) togetherWith (scaleOut(tween(100)) + fadeOut()) },
             label = "playPause",
         ) { s ->
             when (s) {
                 PlayButtonState.LOADING -> CircularProgressIndicator(
-                    modifier = Modifier.size(size * 0.45f),
-                    color = Color.White,
+                    modifier = Modifier.size(size * 0.42f),
+                    color = content,
                     strokeWidth = 2.5.dp,
                 )
-
-                PlayButtonState.PAUSE -> Icon(Icons.Rounded.Pause, "Пауза", Modifier.size(size * 0.55f))
-                PlayButtonState.PLAY -> Icon(Icons.Rounded.PlayArrow, "Пусни", Modifier.size(size * 0.6f))
+                PlayButtonState.PAUSE -> Icon(Icons.Rounded.Pause, null, Modifier.size(size * 0.52f), tint = content)
+                PlayButtonState.PLAY -> Icon(Icons.Rounded.PlayArrow, null, Modifier.size(size * 0.58f), tint = content)
             }
         }
     }
@@ -85,11 +112,11 @@ fun PlayPauseButton(
 @Composable
 fun FavoriteButton(isFavorite: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, iconSize: Dp = 24.dp) {
     val tint by animateColorAsState(
-        if (isFavorite) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
+        if (isFavorite) DominixTheme.colors.favorite else MaterialTheme.colorScheme.onSurfaceVariant,
         label = "favTint",
     )
     val scale by animateFloatAsState(
-        if (isFavorite) 1.15f else 1f,
+        if (isFavorite) 1.12f else 1f,
         spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessMedium),
         label = "favScale",
     )
@@ -103,31 +130,48 @@ fun FavoriteButton(isFavorite: Boolean, onClick: () -> Unit, modifier: Modifier 
     }
 }
 
-/** Small animated "equalizer" shown next to the station that is currently playing. */
+/**
+ * Small animated bars next to the station that is playing. A light status animation only — it
+ * does not analyse the audio. Bars rest when [animate] is false (paused / connecting).
+ */
 @Composable
-fun EqualizerBars(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.primary, animate: Boolean = true) {
-    val transition = rememberInfiniteTransition(label = "eq")
-    val durations = listOf(520, 680, 440)
-    Row(modifier.height(14.dp), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.Bottom) {
-        durations.forEachIndexed { i, d ->
-            val h by transition.animateFloat(
-                initialValue = 0.25f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(tween(d, delayMillis = i * 90, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-                label = "bar$i",
-            )
-            Box(
-                Modifier
-                    .width(3.dp)
-                    .fillMaxHeight(if (animate) h else 0.3f)
-                    .clip(RoundedCornerShape(2.dp))
-                    .background(color),
-            )
+fun EqualizerBars(
+    modifier: Modifier = Modifier,
+    color: Color = DominixTheme.colors.playing,
+    animate: Boolean = true,
+    height: Dp = 14.dp,
+) {
+    val durations = listOf(520, 680, 440, 600)
+    Row(modifier.height(height), horizontalArrangement = Arrangement.spacedBy(2.dp), verticalAlignment = Alignment.Bottom) {
+        if (animate) {
+            val transition = rememberInfiniteTransition(label = "eq")
+            durations.forEachIndexed { i, d ->
+                val h by transition.animateFloat(
+                    initialValue = 0.25f,
+                    targetValue = 1f,
+                    animationSpec = infiniteRepeatable(tween(d, delayMillis = i * 90, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+                    label = "bar$i",
+                )
+                Bar(h, color)
+            }
+        } else {
+            durations.forEach { _ -> Bar(0.3f, color) }
         }
     }
 }
 
 @Composable
+private fun Bar(fraction: Float, color: Color) {
+    Box(
+        Modifier
+            .width(3.dp)
+            .fillMaxHeight(fraction)
+            .clip(RoundedCornerShape(2.dp))
+            .background(color),
+    )
+}
+
+@Composable
 fun LiveDot(modifier: Modifier = Modifier) {
-    Box(modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondary))
+    Box(modifier.size(8.dp).clip(CircleShape).background(DominixTheme.colors.playing))
 }

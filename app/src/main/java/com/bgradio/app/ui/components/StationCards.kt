@@ -6,6 +6,19 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.WarningAmber
+import androidx.compose.material3.Icon
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.heading
+import com.bgradio.app.ui.theme.Dimens
+import com.bgradio.app.ui.theme.DominixTheme
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -55,7 +68,7 @@ fun PlayerUiState.playbackFor(station: Station): StationPlayback {
     return StationPlayback(current, button, current && isPlaying)
 }
 
-/** Large list card used in the catalog and favorites. Long press opens the station actions. */
+/** List card used in the catalog and favorites. Long press opens the station actions. */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StationCard(
@@ -71,9 +84,10 @@ fun StationCard(
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.97f else 1f, label = "cardScale")
+    val scale by animateFloatAsState(if (pressed) 0.98f else 1f, label = "cardScale")
+    val playing = DominixTheme.colors.playing
     val border by animateColorAsState(
-        if (playback.isCurrent) MaterialTheme.colorScheme.primary.copy(alpha = 0.7f) else Color.Transparent,
+        if (playback.isCurrent) playing.copy(alpha = 0.55f) else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f),
         label = "cardBorder",
     )
     Card(
@@ -98,54 +112,70 @@ fun StationCard(
                     else -> "На пауза"
                 }
             },
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-        border = BorderStroke(1.5.dp, border),
+        shape = Dimens.CardShape,
+        colors = CardDefaults.cardColors(
+            containerColor = if (playback.isCurrent) MaterialTheme.colorScheme.surfaceContainerHigh
+            else MaterialTheme.colorScheme.surfaceContainer,
+        ),
+        border = BorderStroke(1.dp, border),
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            StationLogo(station, size = 68.dp)
-            Spacer(Modifier.width(14.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    station.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Spacer(Modifier.height(2.dp))
-                Text(
-                    station.subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                if (issue != null && !playback.isPlaying) {
+        Row(Modifier.height(IntrinsicSize.Min), verticalAlignment = Alignment.CenterVertically) {
+            // Accent bar marks the selected station (together with the text label below).
+            Box(
+                Modifier
+                    .width(3.dp)
+                    .fillMaxHeight()
+                    .background(if (playback.isCurrent) playing else Color.Transparent),
+            )
+            Row(
+                Modifier
+                    .weight(1f)
+                    .padding(start = 9.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                StationLogo(station, size = 56.dp, corner = Dimens.RadiusSmall)
+                Spacer(Modifier.width(14.dp))
+                Column(Modifier.weight(1f)) {
                     Text(
-                        "⚠ ${issue.label}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = if (issue == StationIssue.BROKEN) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.tertiary,
-                        modifier = Modifier.padding(top = 4.dp),
+                        station.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
-                }
-                AnimatedVisibility(playback.isCurrent, enter = fadeIn(), exit = fadeOut()) {
-                    Row(Modifier.padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-                        EqualizerBars(animate = playback.isPlaying)
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            when (playback.button) {
-                                PlayButtonState.LOADING -> "Зареждане…"
-                                PlayButtonState.PAUSE -> "Свири сега"
-                                PlayButtonState.PLAY -> "На пауза"
-                            },
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+                    Text(
+                        station.subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    if (issue != null && !playback.isPlaying) {
+                        val issueColor = if (issue == StationIssue.BROKEN) MaterialTheme.colorScheme.error else DominixTheme.colors.warning
+                        Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Rounded.WarningAmber, contentDescription = null, tint = issueColor, modifier = Modifier.size(14.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(issue.label, style = MaterialTheme.typography.labelMedium, color = issueColor)
+                        }
+                    }
+                    AnimatedVisibility(playback.isCurrent, enter = fadeIn(), exit = fadeOut()) {
+                        Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                            EqualizerBars(animate = playback.isPlaying, height = 12.dp)
+                            Spacer(Modifier.width(6.dp))
+                            Text(
+                                when (playback.button) {
+                                    PlayButtonState.LOADING -> "Свързване…"
+                                    PlayButtonState.PAUSE -> "Свири сега"
+                                    PlayButtonState.PLAY -> "На пауза"
+                                },
+                                style = MaterialTheme.typography.labelMedium,
+                                color = playing,
+                            )
+                        }
                     }
                 }
+                FavoriteButton(isFavorite, onFavorite)
+                PlayPauseButton(playback.button, onPlayToggle, size = 44.dp, prominent = playback.isCurrent)
             }
-            FavoriteButton(isFavorite, onFavorite)
-            PlayPauseButton(playback.button, onPlayToggle, size = 48.dp)
         }
     }
 }
@@ -159,10 +189,10 @@ fun StationTile(
     modifier: Modifier = Modifier,
     large: Boolean = false,
 ) {
-    val width = if (large) 156.dp else 124.dp
+    val width = if (large) 148.dp else 120.dp
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.95f else 1f, label = "tileScale")
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, label = "tileScale")
     Column(
         modifier
             .width(width)
@@ -173,24 +203,38 @@ fun StationTile(
                 role = Role.Button,
                 onClickLabel = "Пусни ${station.name}",
                 onClick = onPlayToggle,
-            ),
+            )
+            .semantics { if (playback.isCurrent) stateDescription = if (playback.isPlaying) "Свири сега" else "Избрана" },
     ) {
         Box {
-            StationLogo(station, size = width, corner = 24.dp)
+            StationLogo(
+                station,
+                size = width,
+                corner = Dimens.RadiusLarge,
+                modifier = if (playback.isCurrent) {
+                    Modifier.border(2.dp, DominixTheme.colors.playing.copy(alpha = 0.7f), RoundedCornerShape(Dimens.RadiusLarge))
+                } else {
+                    Modifier
+                },
+            )
             PlayPauseButton(
                 playback.button,
                 onPlayToggle,
-                size = if (large) 44.dp else 38.dp,
+                size = if (large) 42.dp else 36.dp,
+                prominent = playback.isCurrent,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(8.dp),
+                    .padding(4.dp),
             )
             if (playback.isCurrent) {
                 Box(
                     Modifier
                         .align(Alignment.TopStart)
-                        .padding(10.dp),
-                ) { EqualizerBars(color = MaterialTheme.colorScheme.secondary, animate = playback.isPlaying) }
+                        .padding(8.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(Color.Black.copy(alpha = 0.55f))
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                ) { EqualizerBars(animate = playback.isPlaying, height = 12.dp) }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -200,6 +244,7 @@ fun StationTile(
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -209,20 +254,16 @@ fun SectionHeader(title: String, modifier: Modifier = Modifier, action: String? 
     Row(
         modifier
             .fillMaxWidth()
-            .padding(horizontal = 20.dp),
+            .padding(start = Dimens.ScreenPadding, end = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        Text(title, style = MaterialTheme.typography.titleLarge)
+        Text(
+            title,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.weight(1f).semantics { heading() },
+        )
         if (action != null && onAction != null) {
-            Text(
-                action,
-                style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .clickable(onClick = onAction)
-                    .padding(6.dp),
-            )
+            TextButton(onClick = onAction) { Text(action, style = MaterialTheme.typography.labelLarge) }
         }
     }
 }

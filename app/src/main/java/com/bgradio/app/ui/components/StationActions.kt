@@ -74,6 +74,7 @@ import com.bgradio.app.share.ShareContent
 import com.bgradio.app.share.StationReport
 import com.bgradio.app.share.StationShare
 import com.bgradio.app.ui.MainViewModel
+import com.bgradio.app.ui.theme.DominixTheme
 import com.bgradio.app.ui.MainViewModel.StationDialog
 import kotlinx.coroutines.delay
 
@@ -368,7 +369,7 @@ private fun CheckDialog(station: Station, vm: MainViewModel, onDismiss: () -> Un
                         Icon(
                             if (good) Icons.Rounded.CheckCircle else Icons.Rounded.ErrorOutline,
                             contentDescription = null,
-                            tint = if (good) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                            tint = if (good) DominixTheme.colors.playing else DominixTheme.colors.warning,
                             modifier = Modifier.size(40.dp),
                         )
                         Spacer(Modifier.height(8.dp))

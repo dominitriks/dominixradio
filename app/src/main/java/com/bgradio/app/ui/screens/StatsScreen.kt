@@ -1,5 +1,8 @@
 package com.bgradio.app.ui.screens
 
+import androidx.compose.foundation.BorderStroke
+import com.bgradio.app.ui.theme.Dimens
+import com.bgradio.app.ui.theme.DominixTheme
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
@@ -144,6 +147,7 @@ private fun StatCard(label: String, value: String, sub: String? = null) {
     Card(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
         modifier = Modifier.semantics(mergeDescendants = true) {},
     ) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
@@ -159,14 +163,14 @@ private fun StatCard(label: String, value: String, sub: String? = null) {
 @Composable
 private fun ChartCard(chart: List<Pair<String, Long>>) {
     val bar = MaterialTheme.colorScheme.primary
-    val today = MaterialTheme.colorScheme.secondary
+    val today = DominixTheme.colors.playing // today highlighted (also labelled by the last day number)
     val track = MaterialTheme.colorScheme.surfaceVariant
     val max = (chart.maxOfOrNull { it.second } ?: 0L).coerceAtLeast(60L)
     val grow = remember { Animatable(0f) }
     LaunchedEffect(Unit) { grow.animateTo(1f, tween(600)) }
     val description = "Слушане по дни: " + chart.joinToString { (day, s) -> "${day.takeLast(2)}.${day.substring(5, 7)} ${fmt(s)}" }
 
-    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+    Card(shape = Dimens.PanelShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Column(Modifier.padding(16.dp)) {
             Text("Последните ${chart.size} дни", style = MaterialTheme.typography.titleMedium)
             Text("Най-много: ${fmt(chart.maxOfOrNull { it.second } ?: 0)} на ден", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -211,7 +215,7 @@ private fun ChartCard(chart: List<Pair<String, Long>>) {
 @Composable
 private fun TopStationsCard(top: List<Pair<String, Long>>, byId: Map<String, Station>) {
     val max = top.first().second.coerceAtLeast(1)
-    Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)) {
+    Card(shape = Dimens.PanelShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer), border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Топ 5 радиостанции", style = MaterialTheme.typography.titleMedium)
             top.forEachIndexed { i, (id, secs) ->

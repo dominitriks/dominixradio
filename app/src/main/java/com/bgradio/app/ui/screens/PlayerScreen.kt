@@ -2,6 +2,23 @@ package com.bgradio.app.ui.screens
 
 import android.content.res.Configuration
 import android.os.SystemClock
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material.icons.rounded.Favorite
+import androidx.compose.material.icons.rounded.FavoriteBorder
+import androidx.compose.material3.SliderDefaults
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.heading
+import com.bgradio.app.ui.components.EqualizerBars
+import com.bgradio.app.ui.theme.DominixTheme
+import com.bgradio.app.ui.theme.SmallCaps
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.LinearEasing
@@ -91,12 +108,10 @@ import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.player.SleepTimer
 import com.bgradio.app.ui.MainViewModel
 import com.bgradio.app.ui.components.EmptyState
-import com.bgradio.app.ui.components.FavoriteButton
 import com.bgradio.app.ui.components.PlayButtonState
 import com.bgradio.app.ui.components.PlayPauseButton
 import com.bgradio.app.ui.components.StationLogo
 import com.bgradio.app.ui.components.statusLine
-import com.bgradio.app.ui.theme.genreColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,18 +130,22 @@ fun PlayerScreen(vm: MainViewModel, onClose: () -> Unit) {
             return@Box
         }
 
-        // Soft genre-coloured backdrop.
-        val accent by animateColorAsState(genreColor(station.genre), tween(600), label = "accent")
+        // One soft brand glow behind the artwork; slightly stronger while playing.
+        val glowA = DominixTheme.colors.glowPrimary
+        val glowB = DominixTheme.colors.glowSecondary
+        val glowStrength by animateFloatAsState(if (state.isPlaying) 0.34f else 0.2f, tween(800), label = "glow")
         Box(
             Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to accent.copy(alpha = 0.55f),
-                        0.55f to accent.copy(alpha = 0.12f),
-                        1f to Color.Transparent,
-                    ),
-                ),
+                .drawBehind {
+                    drawRect(
+                        Brush.radialGradient(
+                            listOf(glowA.copy(alpha = glowStrength), glowB.copy(alpha = glowStrength * 0.35f), Color.Transparent),
+                            center = Offset(size.width / 2f, size.height * 0.28f),
+                            radius = size.maxDimension * 0.6f,
+                        ),
+                    )
+                },
         )
 
         val landscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -135,7 +154,8 @@ fun PlayerScreen(vm: MainViewModel, onClose: () -> Unit) {
             Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
-                .navigationBarsPadding(),
+                .navigationBarsPadding()
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
         ) {
             TopBar(state, onClose = onClose, onSleep = { showSleepSheet = true }, onMore = { vm.openStationMenu(station) })
             if (landscape) {
@@ -220,7 +240,7 @@ private fun SleepTimerButton(endsAt: Long?, onClick: () -> Unit) {
         shape = RoundedCornerShape(50),
         color = if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.2f) else Color.Transparent,
         modifier = Modifier
-            .height(48.dp)
+            .heightIn(min = 48.dp)
             .semantics {
                 contentDescription = if (active) "Таймер за заспиване, остават ${SleepTimer.format(remaining!!)}" else "Таймер за заспиване"
             },
@@ -258,29 +278,33 @@ internal fun rememberRemaining(endsAt: Long?): Long? {
 
 @Composable
 private fun Artwork(station: Station, playing: Boolean, size: Dp) {
-    val transition = rememberInfiniteTransition(label = "glow")
-    val glow by transition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 0.75f,
-        animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing), RepeatMode.Reverse),
-        label = "glowAlpha",
-    )
-    val ring = MaterialTheme.colorScheme.primary
+    val ringShape = RoundedCornerShape(size / 6 + 10.dp)
+    val ringColor = MaterialTheme.colorScheme.primary
     Box(contentAlignment = Alignment.Center) {
+        // Animated ring only while audio plays — nothing runs when paused.
+        val ringAlpha = if (playing) {
+            val transition = rememberInfiniteTransition(label = "ring")
+            transition.animateFloat(
+                initialValue = 0.25f,
+                targetValue = 0.7f,
+                animationSpec = infiniteRepeatable(tween(1600, easing = LinearEasing), RepeatMode.Reverse),
+                label = "ringAlpha",
+            ).value
+        } else {
+            0.12f
+        }
         Box(
             Modifier
-                .size(size + 16.dp)
-                .border(
-                    width = 2.dp,
-                    color = ring.copy(alpha = if (playing) glow else 0.12f),
-                    shape = RoundedCornerShape(size / 6 + 8.dp),
-                ),
+                .size(size + 20.dp)
+                .border(1.5.dp, ringColor.copy(alpha = ringAlpha), ringShape),
         )
         StationLogo(
             station,
             size = size,
             corner = size / 6,
-            modifier = Modifier.shadow(24.dp, RoundedCornerShape(size / 6)),
+            modifier = Modifier
+                .shadow(16.dp, RoundedCornerShape(size / 6), ambientColor = DominixTheme.colors.glowPrimary, spotColor = DominixTheme.colors.glowPrimary)
+                .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(size / 6)),
         )
     }
 }
@@ -293,12 +317,15 @@ private fun ColumnScope.Details(
     vm: MainViewModel,
     onClose: () -> Unit,
 ) {
+    StatusPill(state)
+    Spacer(Modifier.height(14.dp))
     Text(
         station.name,
         style = MaterialTheme.typography.headlineMedium,
         textAlign = TextAlign.Center,
         maxLines = 2,
         overflow = TextOverflow.Ellipsis,
+        modifier = Modifier.semantics { heading() },
     )
     Spacer(Modifier.height(4.dp))
     Text(
@@ -307,9 +334,7 @@ private fun ColumnScope.Details(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         textAlign = TextAlign.Center,
     )
-    Spacer(Modifier.height(14.dp))
-    StatusPill(state)
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(10.dp))
 
     val (line, isError) = statusLine(state)
     AnimatedContent(line, transitionSpec = { fadeIn() togetherWith fadeOut() }, label = "status") { text ->
@@ -318,10 +343,10 @@ private fun ColumnScope.Details(
             style = MaterialTheme.typography.bodyMedium,
             color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
-            maxLines = 2,
+            maxLines = 3,
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
-                .height(42.dp)
+                .heightIn(min = 40.dp)
                 .widthIn(max = 420.dp)
                 .semantics { liveRegion = LiveRegionMode.Polite },
         )
@@ -333,27 +358,35 @@ private fun ColumnScope.Details(
             Text("Опитай отново")
         }
     }
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(12.dp))
 
     Controls(
         state = state,
-        isFavorite = isFavorite,
-        onFavorite = { vm.toggleFavorite(station.id) },
         onPrevious = vm::previous,
         onPlayPause = { if (state.playWhenReady) vm.pause() else vm.resume() },
         onNext = vm::next,
+    )
+    Spacer(Modifier.height(20.dp))
+    SecondaryActions(
+        isFavorite = isFavorite,
+        onFavorite = { vm.toggleFavorite(station.id) },
         onStop = {
             vm.stop()
             onClose()
         },
     )
 
-    Spacer(Modifier.height(24.dp))
+    Spacer(Modifier.height(16.dp))
     Row(Modifier.fillMaxWidth().widthIn(max = 480.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(Icons.AutoMirrored.Rounded.VolumeDown, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         Slider(
             value = state.volume,
             onValueChange = vm::setVolume,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            ),
             modifier = Modifier
                 .weight(1f)
                 .padding(horizontal = 8.dp)
@@ -364,52 +397,47 @@ private fun ColumnScope.Details(
     Spacer(Modifier.height(24.dp))
 }
 
-/** "НА ЖИВО" / "СВЪРЗВАНЕ" / "ПАУЗА" / "ГРЕШКА" badge. */
+/** "НА ЖИВО" / "СВЪРЗВАНЕ" / "ПАУЗА" / "ГРЕШКА" badge — text + icon, never colour alone. */
 @Composable
 private fun StatusPill(state: PlayerUiState) {
     val (label, color) = when {
         state.errorMessage != null -> "ГРЕШКА" to MaterialTheme.colorScheme.error
-        state.reconnectMessage != null || state.isLoading -> "СВЪРЗВАНЕ" to MaterialTheme.colorScheme.tertiary
-        state.isPlaying -> "НА ЖИВО" to MaterialTheme.colorScheme.secondary
+        state.reconnectMessage != null || state.isLoading -> "СВЪРЗВАНЕ" to DominixTheme.colors.warning
+        state.isPlaying -> "НА ЖИВО" to DominixTheme.colors.playing
         else -> "ПАУЗА" to MaterialTheme.colorScheme.onSurfaceVariant
     }
-    val transition = rememberInfiniteTransition(label = "live")
-    val pulse by transition.animateFloat(1f, 0.3f, infiniteRepeatable(tween(900), RepeatMode.Reverse), label = "dot")
     Row(
         Modifier
             .clip(RoundedCornerShape(50))
-            .background(color.copy(alpha = 0.16f))
-            .padding(horizontal = 12.dp, vertical = 5.dp),
+            .background(color.copy(alpha = 0.14f))
+            .border(1.dp, color.copy(alpha = 0.35f), RoundedCornerShape(50))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(
-            Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(color.copy(alpha = if (state.isPlaying) pulse else 1f)),
-        )
-        Spacer(Modifier.width(6.dp))
-        Text(label, style = MaterialTheme.typography.labelMedium, color = color, fontWeight = FontWeight.Bold)
+        if (state.isPlaying) {
+            // Light playback animation (not an audio analyser).
+            EqualizerBars(color = color, height = 12.dp)
+        } else {
+            Box(Modifier.size(8.dp).clip(CircleShape).background(color))
+        }
+        Spacer(Modifier.width(8.dp))
+        Text(label, style = SmallCaps, color = color)
     }
 }
 
 @Composable
 private fun Controls(
     state: PlayerUiState,
-    isFavorite: Boolean,
-    onFavorite: () -> Unit,
     onPrevious: () -> Unit,
     onPlayPause: () -> Unit,
     onNext: () -> Unit,
-    onStop: () -> Unit,
 ) {
     Row(
-        Modifier.fillMaxWidth().widthIn(max = 480.dp),
+        Modifier.fillMaxWidth().widthIn(max = 420.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        FavoriteButton(isFavorite, onFavorite, iconSize = 28.dp)
-        FilledTonalIconButton(onClick = onPrevious, modifier = Modifier.size(56.dp)) {
+        FilledTonalIconButton(onClick = onPrevious, modifier = Modifier.size(60.dp)) {
             Icon(Icons.Rounded.SkipPrevious, "Предишно радио", Modifier.size(30.dp))
         }
         val button = when {
@@ -420,7 +448,7 @@ private fun Controls(
         PlayPauseButton(
             state = button,
             onClick = onPlayPause,
-            size = 80.dp,
+            size = 84.dp,
             modifier = Modifier.semantics {
                 stateDescription = when (button) {
                     PlayButtonState.LOADING -> "Свързване"
@@ -429,11 +457,40 @@ private fun Controls(
                 }
             },
         )
-        FilledTonalIconButton(onClick = onNext, modifier = Modifier.size(56.dp)) {
+        FilledTonalIconButton(onClick = onNext, modifier = Modifier.size(60.dp)) {
             Icon(Icons.Rounded.SkipNext, "Следващо радио", Modifier.size(30.dp))
         }
-        IconButton(onClick = onStop, modifier = Modifier.size(48.dp)) {
-            Icon(Icons.Rounded.Stop, "Спри", Modifier.size(28.dp))
+    }
+}
+
+/** Favourite and Stop with visible labels, below the main controls. */
+@Composable
+private fun SecondaryActions(isFavorite: Boolean, onFavorite: () -> Unit, onStop: () -> Unit) {
+    Row(
+        Modifier.widthIn(max = 420.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        OutlinedButton(
+            onClick = onFavorite,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.heightIn(min = 48.dp),
+        ) {
+            Icon(
+                if (isFavorite) Icons.Rounded.Favorite else Icons.Rounded.FavoriteBorder,
+                contentDescription = null,
+                tint = if (isFavorite) DominixTheme.colors.favorite else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(if (isFavorite) "В любими" else "Любима", color = MaterialTheme.colorScheme.onSurface)
+        }
+        OutlinedButton(
+            onClick = onStop,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+            modifier = Modifier.heightIn(min = 48.dp),
+        ) {
+            Icon(Icons.Rounded.Stop, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(8.dp))
+            Text("Спри", color = MaterialTheme.colorScheme.onSurface)
         }
     }
 }

@@ -1,5 +1,17 @@
 package com.bgradio.app.ui.navigation
 
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Radio
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -64,13 +76,14 @@ private object Routes {
     fun stations(search: Boolean = false) = "stations?search=$search"
 }
 
-private data class Tab(val route: String, val navRoute: String, val label: String, val icon: ImageVector)
+/** Selected tab uses the filled icon, others the outlined one — not colour alone. */
+private data class Tab(val route: String, val navRoute: String, val label: String, val icon: ImageVector, val iconOff: ImageVector)
 
 private val tabs = listOf(
-    Tab(Routes.HOME, Routes.HOME, "Начало", Icons.Rounded.Home),
-    Tab(Routes.FAVORITES, Routes.FAVORITES, "Любими", Icons.Rounded.Favorite),
-    Tab(Routes.STATIONS, Routes.stations(), "Радиостанции", Icons.Rounded.Radio),
-    Tab(Routes.SETTINGS, Routes.SETTINGS, "Настройки", Icons.Rounded.Settings),
+    Tab(Routes.HOME, Routes.HOME, "Начало", Icons.Rounded.Home, Icons.Outlined.Home),
+    Tab(Routes.FAVORITES, Routes.FAVORITES, "Любими", Icons.Rounded.Favorite, Icons.Outlined.FavoriteBorder),
+    Tab(Routes.STATIONS, Routes.stations(), "Радиостанции", Icons.Rounded.Radio, Icons.Outlined.Radio),
+    Tab(Routes.SETTINGS, Routes.SETTINGS, "Настройки", Icons.Rounded.Settings, Icons.Outlined.Settings),
 )
 
 @Composable
@@ -139,7 +152,9 @@ fun AppRoot(vm: MainViewModel) {
         NavHost(
             navController = nav,
             startDestination = Routes.HOME,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal)),
             enterTransition = { fadeIn(tween(220)) },
             exitTransition = { fadeOut(tween(180)) },
         ) {
@@ -200,19 +215,26 @@ private fun NavHostController.navigateToTab(route: String) {
 
 @Composable
 private fun BottomBar(nav: NavHostController, currentRoute: String?) {
-    NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
-        tabs.forEach { tab ->
-            NavigationBarItem(
-                selected = currentRoute == tab.route,
-                onClick = { if (currentRoute != tab.route) nav.navigateToTab(tab.navRoute) },
-                icon = { Icon(tab.icon, contentDescription = tab.label) },
-                label = { Text(tab.label, maxLines = 1) },
-                colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = MaterialTheme.colorScheme.primary,
-                    selectedTextColor = MaterialTheme.colorScheme.primary,
-                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
-                ),
-            )
+    Column {
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainerLow, tonalElevation = 0.dp) {
+            tabs.forEach { tab ->
+                val selected = currentRoute == tab.route
+                NavigationBarItem(
+                    selected = selected,
+                    onClick = { if (!selected) nav.navigateToTab(tab.navRoute) },
+                    // The visible label names the tab; no duplicate description for TalkBack.
+                    icon = { Icon(if (selected) tab.icon else tab.iconOff, contentDescription = null) },
+                    label = { Text(tab.label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                        selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    ),
+                )
+            }
         }
     }
 }

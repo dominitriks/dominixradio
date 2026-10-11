@@ -1,5 +1,6 @@
 package com.bgradio.app.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.bgradio.app.player.PlayerUiState
+import com.bgradio.app.ui.theme.Dimens
+import com.bgradio.app.ui.theme.DominixTheme
 
 /** Persistent player bar shown above the bottom navigation while a station is selected. */
 @Composable
@@ -44,10 +47,10 @@ fun MiniPlayer(
             .fillMaxWidth()
             .padding(horizontal = 10.dp, vertical = 6.dp)
             .clickable(onClick = onOpen),
-        shape = RoundedCornerShape(20.dp),
-        color = MaterialTheme.colorScheme.surfaceContainerHighest,
-        tonalElevation = 4.dp,
-        shadowElevation = 8.dp,
+        shape = Dimens.PanelShape,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        shadowElevation = 4.dp,
     ) {
         Column {
         if (state.isLoading) {
@@ -58,7 +61,7 @@ fun MiniPlayer(
             )
         }
         Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-            StationLogo(station, size = 48.dp, corner = 14.dp)
+            StationLogo(station, size = 48.dp, corner = Dimens.RadiusSmall)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -80,13 +83,23 @@ fun MiniPlayer(
                     }
                 }
                 val (line, isError) = statusLine(state)
-                Text(
-                    line,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (isError) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (state.isPlaying) {
+                        EqualizerBars(height = 10.dp)
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text(
+                        line,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = when {
+                            isError -> MaterialTheme.colorScheme.error
+                            state.isPlaying -> DominixTheme.colors.playing
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
             PlayPauseButton(
                 state = when {

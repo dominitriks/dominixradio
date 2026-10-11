@@ -2,6 +2,18 @@ package com.bgradio.app.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import com.bgradio.app.ui.components.BrandSlogan
+import com.bgradio.app.ui.components.TricolorLine
+import com.bgradio.app.ui.theme.Dimens
+import com.bgradio.app.ui.theme.DominixTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -52,8 +64,6 @@ import com.bgradio.app.share.StationShare
 import com.bgradio.app.ui.components.SectionHeader
 import com.bgradio.app.ui.components.StationTile
 import com.bgradio.app.ui.components.playbackFor
-import com.bgradio.app.ui.theme.BgGreen
-import com.bgradio.app.ui.theme.BgRed
 import com.bgradio.app.ui.theme.genreColor
 
 @Composable
@@ -75,7 +85,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding() + 16.dp),
-        verticalArrangement = Arrangement.spacedBy(20.dp),
+        verticalArrangement = Arrangement.spacedBy(Dimens.SectionGap),
     ) {
         item(key = "header") { Header(stations.size, onOpenSearch, onOpenStats) }
 
@@ -85,9 +95,9 @@ fun HomeScreen(
             if (bg.backgroundRestricted) {
                 Surface(
                     onClick = { BackgroundStatus.openAppSettings(context) },
-                    shape = RoundedCornerShape(18.dp),
+                    shape = Dimens.CardShape,
                     color = MaterialTheme.colorScheme.errorContainer,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = Dimens.ListPadding),
                 ) {
                     Text(
                         "Android ограничава Dominix на заден фон и радиото ще спира при заключен екран. " +
@@ -138,20 +148,35 @@ fun HomeScreen(
 
 @Composable
 private fun Header(stationCount: Int, onOpenSearch: () -> Unit, onOpenStats: () -> Unit) {
+    val glowA = DominixTheme.colors.glowPrimary
+    val glowB = DominixTheme.colors.glowSecondary
     Box(
         Modifier
             .fillMaxWidth()
-            .background(
-                Brush.verticalGradient(
-                    listOf(BgGreen.copy(alpha = 0.28f), BgRed.copy(alpha = 0.06f), Color.Transparent),
-                ),
-            )
+            .drawBehind {
+                // One soft, low-contrast glow — atmosphere, not decoration.
+                drawRect(
+                    Brush.radialGradient(
+                        listOf(glowA.copy(alpha = 0.22f), glowB.copy(alpha = 0.08f), Color.Transparent),
+                        center = Offset(size.width * 0.15f, 0f),
+                        radius = size.width * 0.9f,
+                    ),
+                )
+            }
             .statusBarsPadding()
-            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
+            .padding(start = Dimens.ScreenPadding, end = 8.dp, top = 16.dp, bottom = 4.dp),
     ) {
         Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("DOMINIX", style = MaterialTheme.typography.displaySmall, modifier = Modifier.weight(1f))
+            Row(verticalAlignment = Alignment.Top) {
+                Column(Modifier.weight(1f).padding(top = 6.dp)) {
+                    Text(
+                        "DOMINIX",
+                        style = MaterialTheme.typography.displaySmall,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    TricolorLine()
+                }
                 val context = LocalContext.current
                 IconButton(onClick = {
                     if (!StationShare.shareApp(context)) {
@@ -164,21 +189,28 @@ private fun Header(stationCount: Int, onOpenSearch: () -> Unit, onOpenStats: () 
                     Icon(Icons.Rounded.BarChart, contentDescription = "Статистика", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(14.dp))
+            BrandSlogan(Modifier.padding(end = 12.dp))
+            Spacer(Modifier.height(6.dp))
             Text(
                 "Български радиостанции на едно място",
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(end = 12.dp),
             )
             Spacer(Modifier.height(18.dp))
             Surface(
                 onClick = onOpenSearch,
-                shape = RoundedCornerShape(18.dp),
+                shape = Dimens.CardShape,
                 color = MaterialTheme.colorScheme.surfaceContainer,
-                modifier = Modifier.fillMaxWidth(),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 12.dp)
+                    .heightIn(min = 52.dp),
             ) {
-                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Rounded.Search, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(Modifier.padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Search, null, tint = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.width(12.dp))
                     Text(
                         "Търси сред $stationCount радиостанции",
@@ -203,10 +235,10 @@ private fun StationRow(
 ) {
     Column {
         SectionHeader(title, action = action, onAction = onAction)
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 20.dp),
-            horizontalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = PaddingValues(horizontal = Dimens.ScreenPadding),
+            horizontalArrangement = Arrangement.spacedBy(Dimens.ItemGap),
         ) {
             items(stations, key = { it.id }) { s ->
                 StationTile(s, player.playbackFor(s), onPlayToggle = { onPlay(s) }, large = large)
@@ -221,36 +253,46 @@ private fun CategoryGrid(genres: List<String>, stations: List<Station>, onOpen: 
     val counts = stations.groupingBy { it.genre }.eachCount()
     Column {
         SectionHeader("Категории")
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(8.dp))
         FlowRow(
-            modifier = Modifier.padding(horizontal = 20.dp),
+            modifier = Modifier.padding(horizontal = Dimens.ListPadding),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
             maxItemsInEachRow = 2,
         ) {
             genres.forEach { g ->
-                val color = genreColor(g)
-                Box(
-                    Modifier
+                Surface(
+                    onClick = { onOpen(g) },
+                    shape = Dimens.CardShape,
+                    color = MaterialTheme.colorScheme.surfaceContainer,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    modifier = Modifier
                         .weight(1f)
-                        .height(72.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(Brush.linearGradient(listOf(color, color.copy(alpha = 0.45f))))
-                        .clickable { onOpen(g) }
-                        .padding(14.dp),
+                        .heightIn(min = 64.dp)
+                        .semantics(mergeDescendants = true) {},
                 ) {
-                    Text(
-                        Categories.shortLabel(g),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White,
-                        modifier = Modifier.align(Alignment.TopStart),
-                    )
-                    Text(
-                        "${counts[g] ?: 0} станции",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.White.copy(alpha = 0.85f),
-                        modifier = Modifier.align(Alignment.BottomStart),
-                    )
+                    Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            Modifier
+                                .size(10.dp)
+                                .clip(CircleShape)
+                                .background(genreColor(g)),
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(Categories.shortLabel(g), style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                "${counts[g] ?: 0} станции",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Icon(
+                            Icons.AutoMirrored.Rounded.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
             if (genres.size % 2 == 1) Spacer(Modifier.weight(1f).size(0.dp))
