@@ -44,12 +44,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.bgradio.app.ui.MainViewModel
 import com.bgradio.app.ui.components.MiniPlayer
+import com.bgradio.app.ui.components.StationActionsHost
 import com.bgradio.app.ui.components.UpdateDialog
 import com.bgradio.app.ui.screens.FavoritesScreen
 import com.bgradio.app.ui.screens.HomeScreen
 import com.bgradio.app.ui.screens.PlayerScreen
 import com.bgradio.app.ui.screens.SettingsScreen
 import com.bgradio.app.ui.screens.StationsScreen
+import com.bgradio.app.ui.screens.StatsScreen
 
 private object Routes {
     const val HOME = "home"
@@ -57,6 +59,7 @@ private object Routes {
     const val STATIONS = "stations?search={search}"
     const val SETTINGS = "settings"
     const val PLAYER = "player"
+    const val STATS = "stats"
 
     fun stations(search: Boolean = false) = "stations?search=$search"
 }
@@ -92,6 +95,7 @@ fun AppRoot(vm: MainViewModel) {
 
     val updateDialog by vm.updateDialog.collectAsStateWithLifecycle()
     updateDialog?.let { UpdateDialog(it.result, vm.installedVersion, vm::dismissUpdateDialog) }
+    StationActionsHost(vm)
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
@@ -141,6 +145,7 @@ fun AppRoot(vm: MainViewModel) {
                         nav.navigateToTab(Routes.stations(search = true))
                     },
                     onOpenFavorites = { nav.navigateToTab(Routes.FAVORITES) },
+                    onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } },
                 )
             }
             composable(Routes.FAVORITES) {
@@ -157,7 +162,10 @@ fun AppRoot(vm: MainViewModel) {
                     onOpenPlayer = { nav.navigate(Routes.PLAYER) },
                 )
             }
-            composable(Routes.SETTINGS) { SettingsScreen(vm, padding) }
+            composable(Routes.SETTINGS) {
+                SettingsScreen(vm, padding, onOpenStats = { nav.navigate(Routes.STATS) { launchSingleTop = true } })
+            }
+            composable(Routes.STATS) { StatsScreen(vm, padding, onBack = { nav.popBackStack() }) }
             composable(
                 Routes.PLAYER,
                 enterTransition = { slideInVertically(tween(320)) { it } + fadeIn() },

@@ -22,8 +22,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -58,6 +60,7 @@ fun HomeScreen(
     onOpenCategory: (String?) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenFavorites: () -> Unit,
+    onOpenStats: () -> Unit = {},
 ) {
     val player by vm.playerState.collectAsStateWithLifecycle()
     val recent by vm.recent.collectAsStateWithLifecycle()
@@ -71,7 +74,7 @@ fun HomeScreen(
         contentPadding = PaddingValues(bottom = contentPadding.calculateBottomPadding() + 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        item(key = "header") { Header(stations.size, onOpenSearch) }
+        item(key = "header") { Header(stations.size, onOpenSearch, onOpenStats) }
 
         item(key = "bgwarning") {
             val bg = rememberBackgroundStatus()
@@ -131,7 +134,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun Header(stationCount: Int, onOpenSearch: () -> Unit) {
+private fun Header(stationCount: Int, onOpenSearch: () -> Unit, onOpenStats: () -> Unit) {
     Box(
         Modifier
             .fillMaxWidth()
@@ -144,7 +147,12 @@ private fun Header(stationCount: Int, onOpenSearch: () -> Unit) {
             .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 4.dp),
     ) {
         Column {
-            Text("DOMINIX", style = MaterialTheme.typography.displaySmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("DOMINIX", style = MaterialTheme.typography.displaySmall, modifier = Modifier.weight(1f))
+                IconButton(onClick = onOpenStats) {
+                    Icon(Icons.Rounded.BarChart, contentDescription = "Статистика", tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 "Български радиостанции на едно място",

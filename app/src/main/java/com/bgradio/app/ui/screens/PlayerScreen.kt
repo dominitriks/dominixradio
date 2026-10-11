@@ -41,6 +41,7 @@ import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.rounded.Bedtime
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Radio
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SkipNext
@@ -136,7 +137,7 @@ fun PlayerScreen(vm: MainViewModel, onClose: () -> Unit) {
                 .statusBarsPadding()
                 .navigationBarsPadding(),
         ) {
-            TopBar(state, onClose = onClose, onSleep = { showSleepSheet = true })
+            TopBar(state, onClose = onClose, onSleep = { showSleepSheet = true }, onMore = { vm.openStationMenu(station) })
             if (landscape) {
                 Row(
                     Modifier
@@ -188,7 +189,7 @@ fun PlayerScreen(vm: MainViewModel, onClose: () -> Unit) {
 }
 
 @Composable
-private fun TopBar(state: PlayerUiState, onClose: () -> Unit, onSleep: () -> Unit) {
+private fun TopBar(state: PlayerUiState, onClose: () -> Unit, onSleep: () -> Unit, onMore: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -203,6 +204,9 @@ private fun TopBar(state: PlayerUiState, onClose: () -> Unit, onSleep: () -> Uni
             modifier = Modifier.weight(1f),
         )
         SleepTimerButton(state.sleepEndsAt, onSleep)
+        IconButton(onClick = onMore) {
+            Icon(Icons.Rounded.MoreVert, "Още: сподели, QR код, провери, докладвай")
+        }
     }
 }
 

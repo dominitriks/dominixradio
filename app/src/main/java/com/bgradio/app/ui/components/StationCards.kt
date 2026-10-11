@@ -6,7 +6,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -53,7 +55,8 @@ fun PlayerUiState.playbackFor(station: Station): StationPlayback {
     return StationPlayback(current, button, current && isPlaying)
 }
 
-/** Large list card used in the catalog and favorites. */
+/** Large list card used in the catalog and favorites. Long press opens the station actions. */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StationCard(
     station: Station,
@@ -64,6 +67,7 @@ fun StationCard(
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
     issue: StationIssue? = null,
+    onLongPress: (() -> Unit)? = null,
 ) {
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -76,11 +80,13 @@ fun StationCard(
         modifier = modifier
             .fillMaxWidth()
             .scale(scale)
-            .clickable(
+            .combinedClickable(
                 interactionSource = interaction,
                 indication = null,
                 role = Role.Button,
                 onClickLabel = if (playback.isCurrent) "Отвори плейъра" else "Пусни",
+                onLongClickLabel = "Още действия",
+                onLongClick = onLongPress,
             ) {
                 if (playback.isCurrent) onOpen() else onPlayToggle()
             }

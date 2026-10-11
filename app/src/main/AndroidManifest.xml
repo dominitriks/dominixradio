@@ -62,5 +62,16 @@
             android:resource="@xml/automotive_app_desc" />
 
         <meta-data android:name="app.author" android:value="Dominantus" />
+
+        <!-- Shares the generated QR image with other apps (read-only, temporary grant). -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 </manifest>

@@ -18,6 +18,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.BarChart
 import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.BatterySaver
 import androidx.compose.material.icons.rounded.BrightnessAuto
@@ -61,7 +62,7 @@ import com.bgradio.app.data.repository.UpdateResult
 import com.bgradio.app.utils.BackgroundStatus
 
 @Composable
-fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
+fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats: () -> Unit = {}) {
     val settings = vm.settings.collectAsStateWithLifecycle().value ?: AppSettings()
     val stations by vm.stations.collectAsStateWithLifecycle()
     var showAbout by rememberSaveable { mutableStateOf(false) }
@@ -82,6 +83,17 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues) {
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 4.dp),
         )
+
+        SettingsGroup("Моето слушане") {
+            val summary by vm.statsSummary.collectAsStateWithLifecycle()
+            InfoRow(
+                "Статистика",
+                if (summary.isEmpty) "Време за слушане, любими станции, история"
+                else "Общо ${com.bgradio.app.data.stats.StatsSummary.formatDuration(summary.totalSeconds)} · днес ${com.bgradio.app.data.stats.StatsSummary.formatDuration(summary.todaySeconds)}",
+                Icons.Rounded.BarChart,
+                onOpenStats,
+            )
+        }
 
         SettingsGroup("Външен вид") {
             ThemeOption("Тъмен режим", Icons.Rounded.DarkMode, settings.themeMode == ThemeMode.DARK) {

@@ -21,8 +21,8 @@ android {
         applicationId = "com.bgradio.app"
         minSdk = 24
         targetSdk = 35
-        versionCode = 5
-        versionName = "1.2.0"
+        versionCode = 6
+        versionName = "1.3.0"
     }
 
     signingConfigs {
@@ -92,6 +92,8 @@ dependencies {
     implementation(libs.coil.compose)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.guava)
+    // QR codes generated on the phone (encoder only, no camera / network).
+    implementation(libs.zxing.core)
 
     testImplementation(libs.junit)
     // Real org.json for JVM tests (Android's copy is only a stub there).

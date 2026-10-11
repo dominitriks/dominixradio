@@ -121,6 +121,7 @@ internal fun StationGrid(
                 onOpen = onOpenPlayer,
                 modifier = Modifier.animateItem(),
                 issue = player.issues[s.id],
+                onLongPress = { vm.openStationMenu(s) },
             )
         }
     }

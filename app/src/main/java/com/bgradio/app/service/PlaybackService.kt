@@ -35,6 +35,7 @@ import com.bgradio.app.R
 import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.Categories
 import com.bgradio.app.data.model.Station
+import com.bgradio.app.data.stats.ListeningTracker
 import com.bgradio.app.player.PlaybackErrors
 import com.bgradio.app.player.PlayerContract
 import com.bgradio.app.player.SleepTimer
@@ -84,6 +85,24 @@ class PlaybackService : MediaLibraryService() {
     private var reconnecting = false
     private var recordedStationId: String? = null
     private var statusSeq = 0
+
+    // Listening statistics: only real playback time, flushed once a minute.
+    private val tracker by lazy {
+        ListeningTracker(System::currentTimeMillis, SystemClock::elapsedRealtime, container.stats)
+    }
+    private val statsFlush = object : Runnable {
+        override fun run() {
+            tracker.flush()
+            container.stats.persist()
+            handler.postDelayed(this, STATS_FLUSH_MS)
+        }
+    }
+
+    private fun stopTracking(finish: Boolean) {
+        handler.removeCallbacks(statsFlush)
+        if (finish) tracker.finish() else tracker.onStopped()
+        container.stats.persist()
+    }
 
     private val idleStop = Runnable {
         if (!exoPlayer.playWhenReady) stopPlayback()
@@ -200,6 +219,7 @@ class PlaybackService : MediaLibraryService() {
     }
 
     override fun onDestroy() {
+        stopTracking(finish = true)
         handler.removeCallbacksAndMessages(null)
         scope.cancel()
         session?.run {
@@ -259,6 +279,7 @@ class PlaybackService : MediaLibraryService() {
 
     /** Stop button: stop audio, drop the notification, release the service. */
     private fun stopPlayback() {
+        stopTracking(finish = true)
         handler.removeCallbacks(idleStop)
         cancelSleepTimer(restoreVolume = true)
         exoPlayer.stop()
@@ -281,6 +302,8 @@ class PlaybackService : MediaLibraryService() {
         override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
             val id = mediaItem?.mediaId
             if (id != currentStationId) {
+                // New station: stop counting the old one while the new one connects.
+                if (tracker.isPlaying) stopTracking(finish = false)
                 currentStationId = id
                 recordedStationId = null
                 urlIndex = 0
@@ -312,6 +335,14 @@ class PlaybackService : MediaLibraryService() {
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
             if (isPlaying) endedRestarts = 0
+            val playingId = exoPlayer.currentMediaItem?.mediaId
+            if (isPlaying && playingId != null) {
+                tracker.onPlaying(playingId)
+                handler.removeCallbacks(statsFlush)
+                handler.postDelayed(statsFlush, STATS_FLUSH_MS)
+            } else if (!isPlaying && tracker.isPlaying) {
+                stopTracking(finish = false) // pause, buffering, error: not counted
+            }
             val id = currentStationId
             if (isPlaying && id != null && id != recordedStationId) {
                 recordedStationId = id
@@ -588,6 +619,7 @@ class PlaybackService : MediaLibraryService() {
 
     private companion object {
         const val IDLE_STOP_MS = 10 * 60 * 1000L
+        const val STATS_FLUSH_MS = 60_000L
 
         const val NODE_ROOT = "root"
         const val NODE_FAVORITES = "node_favorites"

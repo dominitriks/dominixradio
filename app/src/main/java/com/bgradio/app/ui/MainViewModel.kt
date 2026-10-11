@@ -11,6 +11,13 @@ import com.bgradio.app.data.model.AppSettings
 import com.bgradio.app.data.model.Station
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.data.repository.UpdateResult
+import com.bgradio.app.data.repository.CheckResult
+import com.bgradio.app.share.ReportReason
+import com.bgradio.app.share.StationReport
+import com.bgradio.app.BuildConfig
+import kotlinx.coroutines.Job
+import com.bgradio.app.data.stats.StatsData
+import com.bgradio.app.data.stats.StatsSummary
 import com.bgradio.app.player.PlayerUiState
 import com.bgradio.app.utils.SearchUtils
 import com.bgradio.app.utils.StationSort
@@ -33,6 +40,64 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
     private val prefs = container.prefs
     private val player = container.player
     private val updates = container.updates
+    private val stats = container.stats
+    private val checker = container.checker
+
+    // ---- Station actions: share, QR, report, check (one dialog at a time) -----------------
+
+    sealed interface StationDialog {
+        val station: Station
+        data class Menu(override val station: Station) : StationDialog
+        data class Qr(override val station: Station) : StationDialog
+        data class Report(override val station: Station) : StationDialog
+        data class Check(override val station: Station) : StationDialog
+    }
+
+    private val _stationDialog = MutableStateFlow<StationDialog?>(null)
+    val stationDialog: StateFlow<StationDialog?> = _stationDialog.asStateFlow()
+
+    private val _checkResult = MutableStateFlow<CheckResult?>(null)
+    val checkResult: StateFlow<CheckResult?> = _checkResult.asStateFlow()
+    private var checkJob: Job? = null
+
+    /** Ignored while another station dialog is open (prevents stacked duplicates). */
+    fun openStationMenu(station: Station) {
+        if (_stationDialog.value == null) _stationDialog.value = StationDialog.Menu(station)
+    }
+
+    fun showStationDialog(dialog: StationDialog) {
+        _stationDialog.value = dialog
+        if (dialog is StationDialog.Check) startCheck(dialog.station)
+    }
+
+    fun closeStationDialog() {
+        checkJob?.cancel()
+        checkJob = null
+        _checkResult.value = null
+        _stationDialog.value = null
+    }
+
+    private fun startCheck(station: Station) {
+        checkJob?.cancel()
+        _checkResult.value = null
+        checkJob = viewModelScope.launch {
+            val result = checker.check(station)
+            _checkResult.value = result
+            if (result == CheckResult.Works || result == CheckResult.WorksViaFallback) player.clearIssue(station.id)
+        }
+    }
+
+    fun buildReport(station: Station, reason: ReportReason, description: String) =
+        StationReport(station, reason, description, BuildConfig.VERSION_NAME, System.currentTimeMillis())
+
+    // ---- Listening statistics -------------------------------------------------------------
+
+    val statsSummary: StateFlow<StatsSummary> = stats.data
+        .map { StatsSummary.of(it, System.currentTimeMillis()) }
+        .flowOn(Dispatchers.Default)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), StatsSummary.of(StatsData(), System.currentTimeMillis()))
+
+    fun clearStats() = stats.clear()
 
     // ---- Update check (GitHub Releases) ---------------------------------------------------
 
@@ -131,6 +196,7 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     init {
+        viewModelScope.launch(Dispatchers.IO) { stats.ensureLoaded() }
         viewModelScope.launch {
             val all = withContext(Dispatchers.IO) { stationRepo.stations }
             _stations.value = all

@@ -281,6 +281,11 @@ class PlayerConnection(
         }
     }
 
+    /** A successful on-demand check clears the "unavailable" mark of a station. */
+    fun clearIssue(stationId: String) {
+        if (issueLog.remove(stationId) != null) _state.update { it.copy(issues = currentIssues()) }
+    }
+
     /** Manual "Try again" after an error: starts the current station from its primary address. */
     fun retry() = resume()
 

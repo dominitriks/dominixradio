@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.3.0] — 2026-10-12
+
+### Added
+- **Listening statistics** (Settings → Statistics, or the chart icon on the home screen): total, today, last 7 days, this month, most listened station, top 5, number of sessions, 14-day chart and session history. Counts only time when audio is actually playing (also in the background), splits sessions at midnight, never double counts; stored locally and can be deleted.
+- **Share a station** through the Android share sheet (name + DOMINIX download link; never the raw stream).
+- **QR code** generated on the phone, pointing to the official download page (there is no per-station deep link), with share and save-to-gallery (Android 10+).
+- **Report a problem** with a station: reason + optional description; send via GitHub, any app (share sheet) or copy. Never claims "sent" — the report goes out only when you confirm it in the chosen app.
+- **Check station** on demand: up to 2 attempts per address, tells "no internet" apart from a station problem, does not interrupt what is playing.
+- Station actions: ⋮ in the player or long-press on a station card.
+
 ## [1.2.0] — 2026-10-11
 
 ### Added

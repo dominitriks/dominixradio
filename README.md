@@ -34,6 +34,9 @@ Requires Android 7.0 or newer. If Google Play Protect shows a warning, tap **Mor
 * Recently played
 * Song info (when the station provides it)
 * Update check via GitHub Releases
+* Listening statistics
+* Share stations and QR code
+* Report broken stations
 
 Also: recently played, automatic reconnect after network loss, Wi-Fi-only mode, dark/light theme, Android Auto browsing. The interface is in Bulgarian. No account, no ads, no server: favorites and settings stay on the phone.
 
@@ -64,8 +67,8 @@ The station list is in [`app/src/main/assets/stations.json`](app/src/main/assets
 Requirements: JDK 17 and the Android SDK (platform 35). Create `local.properties` with `sdk.dir=<path to Android SDK>`.
 
 ```bash
-./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.2.0-release.apk
-./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.2.0-debug.apk
+./gradlew assembleRelease   # app/build/outputs/apk/release/Dominix-v1.3.0-release.apk
+./gradlew assembleDebug     # app/build/outputs/apk/debug/Dominix-v1.3.0-debug.apk
 ```
 
 Release signing reads `keystore.properties` (not committed):
