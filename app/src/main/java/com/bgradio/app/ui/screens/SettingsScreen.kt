@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.PrivacyTip
 import androidx.compose.material.icons.rounded.LightMode
 import androidx.compose.material.icons.rounded.Numbers
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.SystemUpdate
 import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Card
@@ -60,6 +61,7 @@ import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.ui.MainViewModel
 import com.bgradio.app.data.repository.UpdateResult
 import com.bgradio.app.utils.BackgroundStatus
+import com.bgradio.app.share.StationShare
 
 @Composable
 fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats: () -> Unit = {}) {
@@ -68,6 +70,7 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats
     var showAbout by rememberSaveable { mutableStateOf(false) }
     var showFeedback by rememberSaveable { mutableStateOf(false) }
     var showPrivacy by rememberSaveable { mutableStateOf(false) }
+    var shareAppFailed by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Column(
@@ -151,6 +154,11 @@ fun SettingsScreen(vm: MainViewModel, contentPadding: PaddingValues, onOpenStats
 
         SettingsGroup("Информация") {
             InfoRow("За приложението", "Dominix · създадено от Dominantus", Icons.Rounded.Info) { showAbout = true }
+            InfoRow(
+                "Сподели DOMINIX",
+                if (shareAppFailed) "Няма приложение, с което да се сподели." else "Изпрати линк за изтегляне на приятели",
+                Icons.Rounded.Share,
+            ) { shareAppFailed = !StationShare.shareApp(context) }
             InfoRow("Изпрати обратна връзка", "Проблем или идея — чрез GitHub", Icons.Rounded.Feedback) { showFeedback = true }
             InfoRow("Поверителност", "Не събираме лични данни", Icons.Rounded.PrivacyTip) { showPrivacy = true }
             InfoRow("Версия", BuildConfig.VERSION_NAME, Icons.Rounded.Numbers, null)

@@ -46,6 +46,20 @@ class ShareContentTest {
     }
 
     @Test
+    fun shareAppMessageHasExactTextAndOfficialLink() {
+        assertEquals(
+            "Слушай любимите си български радиостанции с DOMINIX – Bulgarian Radio! " +
+                "Изтегли приложението оттук: https://github.com/dominitriks/dominixradio/releases/latest",
+            ShareContent.appMessage(),
+        )
+        assertEquals("https://github.com/dominitriks/dominixradio/releases/latest", AppInfo.DOWNLOAD_URL)
+        assertTrue(ShareContent.appMessage().endsWith(AppInfo.DOWNLOAD_URL))
+        assertEquals("DOMINIX – Bulgarian Radio", ShareContent.APP_SUBJECT)
+        // A link to the page, never the APK file itself.
+        assertFalse(ShareContent.appMessage().contains(".apk"))
+    }
+
+    @Test
     fun shareMessageNamesStationAppAndLinkButNotTheStream() {
         val msg = ShareContent.message(station)
         assertEquals("Слушам Дарик Радио с DOMINIX – Bulgarian Radio. Опитай и ти! ${AppInfo.DOWNLOAD_URL}", msg)

@@ -27,6 +27,12 @@ object ShareContent {
     fun message(station: Station, link: String = AppInfo.DOWNLOAD_URL): String =
         "Слушам ${station.name} с DOMINIX – Bulgarian Radio. Опитай и ти! $link"
 
+    /** "Сподели DOMINIX": recommends the app itself with the official download link. */
+    fun appMessage(link: String = AppInfo.DOWNLOAD_URL): String =
+        "Слушай любимите си български радиостанции с DOMINIX – Bulgarian Radio! Изтегли приложението оттук: $link"
+
+    const val APP_SUBJECT = "DOMINIX – Bulgarian Radio"
+
     /**
      * What the QR code contains. There is no per-station deep link, so it is the official
      * download page; the station name is printed next to the code instead.
@@ -50,14 +56,21 @@ object ShareContent {
 /** Android side: share sheet, QR bitmap, saving to the gallery. */
 object StationShare {
 
-    /** Opens the Android share sheet. Returns false if no app can share text. */
-    fun shareText(context: Context, station: Station): Boolean {
+    /** Opens the Android share sheet for a station. Returns false if no app can share text. */
+    fun shareText(context: Context, station: Station): Boolean =
+        sharePlainText(context, "${station.name} в DOMINIX", ShareContent.message(station), "Сподели радиостанция")
+
+    /** "Сподели DOMINIX" — shares the download link of the app. Returns false if no app can share text. */
+    fun shareApp(context: Context): Boolean =
+        sharePlainText(context, ShareContent.APP_SUBJECT, ShareContent.appMessage(), "Сподели DOMINIX")
+
+    private fun sharePlainText(context: Context, subject: String, text: String, chooserTitle: String): Boolean {
         val send = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, "${station.name} в DOMINIX")
-            putExtra(Intent.EXTRA_TEXT, ShareContent.message(station))
+            putExtra(Intent.EXTRA_SUBJECT, subject)
+            putExtra(Intent.EXTRA_TEXT, text)
         }
-        return start(context, Intent.createChooser(send, "Сподели радиостанция"))
+        return start(context, Intent.createChooser(send, chooserTitle))
     }
 
     fun qrBitmap(content: String, size: Int = 720): Bitmap {
