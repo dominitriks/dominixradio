@@ -48,16 +48,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import com.bgradio.app.ui.theme.Brand
+import androidx.compose.runtime.ReadOnlyComposable
 import com.bgradio.app.ui.theme.DominixTheme
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 enum class PlayButtonState { PLAY, PAUSE, LOADING }
 
-/** Gradient used for the main accent actions (deep purple → deep blue, white content ≥ 4.5:1). */
+/** Gradient used for the main accent actions (follows the theme; white content ≥ 4.5:1). */
 val AccentGradient: Brush
-    get() = Brush.linearGradient(listOf(Brand.PurpleDeep, Brand.BlueDeep))
+    @Composable @ReadOnlyComposable
+    get() = Brush.linearGradient(listOf(DominixTheme.colors.accentStart, DominixTheme.colors.accentEnd))
 
 /**
  * Play / Pause / loading button.

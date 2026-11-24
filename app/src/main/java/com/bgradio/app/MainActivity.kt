@@ -22,8 +22,10 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.bgradio.app.data.model.ThemeMode
 import com.bgradio.app.ui.MainViewModel
+import com.bgradio.app.ui.components.Snowfall
 import com.bgradio.app.ui.navigation.AppRoot
 import com.bgradio.app.ui.theme.BGRadioTheme
+import com.bgradio.app.ui.theme.DominixTheme
 
 class MainActivity : ComponentActivity() {
 
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
             BGRadioTheme(themeMode = settings?.themeMode ?: ThemeMode.DARK) {
                 Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
                     AppRoot(vm)
+                    if (DominixTheme.colors.festive && settings?.snow == true) Snowfall()
                 }
             }
         }

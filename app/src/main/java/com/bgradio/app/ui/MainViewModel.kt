@@ -393,6 +393,10 @@ class MainViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { prefs.setThemeMode(mode) }
     }
 
+    fun setSnow(enabled: Boolean) {
+        viewModelScope.launch { prefs.setSnow(enabled) }
+    }
+
     fun setWifiOnly(enabled: Boolean) {
         viewModelScope.launch { prefs.setWifiOnly(enabled) }
     }

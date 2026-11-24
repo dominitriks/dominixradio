@@ -56,6 +56,26 @@ class PaletteContrastTest {
     }
 
     @Test
+    fun christmasThemeTextIsReadable() {
+        val c = Palette.christmas
+        val x = Palette.christmasExtra
+        for (bg in listOf(c.background, c.surfaceContainer, c.surfaceContainerHighest)) {
+            assertText("text", c.onSurface, bg, 7.0)
+            assertText("muted text", c.onSurfaceVariant, bg)
+            assertText("primary as text", c.primary, bg)
+            assertText("secondary as text", c.secondary, bg)
+            assertText("playing label", x.playing, bg)
+            assertText("favorite", x.favorite, bg)
+            assertText("warning label", x.warning, bg)
+            assertText("error", c.error, bg)
+        }
+        assertText("onPrimary on primary", c.onPrimary, c.primary)
+        assertText("selected tab icon", c.onPrimaryContainer, c.primaryContainer)
+        assertText("white on accent start", Color.White, x.accentStart)
+        assertText("white on accent end", Color.White, x.accentEnd)
+    }
+
+    @Test
     fun initialsOnGenreTilesAreReadable() {
         val dark = Color(0xFF101322)
         listOf("Поп", "Хитове", "Рок", "Денс", "Българска музика", "Чалга", "Новини", "Спорт", "Джаз", "Класическа музика", "Други")

@@ -14,6 +14,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import com.bgradio.app.ui.components.BrandSlogan
+import com.bgradio.app.ui.components.ChristmasLights
 import com.bgradio.app.ui.components.TricolorLine
 import com.bgradio.app.ui.theme.Dimens
 import com.bgradio.app.ui.theme.DominixTheme
@@ -177,6 +178,15 @@ private fun Header(stationCount: Int, onOpenSearch: () -> Unit, onOpenStats: () 
             .padding(start = Dimens.ScreenPadding, end = 8.dp, top = 16.dp, bottom = 4.dp),
     ) {
         Column {
+            if (DominixTheme.colors.festive) {
+                ChristmasLights(Modifier.fillMaxWidth().padding(end = 12.dp))
+                Text(
+                    "Весели празници!",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = DominixTheme.colors.warning,
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+            }
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f).padding(top = 6.dp)) {
                     Text(

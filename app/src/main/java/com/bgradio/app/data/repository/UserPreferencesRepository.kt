@@ -37,6 +37,7 @@ class UserPreferencesRepository(context: Context) {
     val settings: Flow<AppSettings> = data.map { prefs ->
         AppSettings(
             themeMode = prefs[THEME]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.DARK,
+            snow = prefs[SNOW] ?: true,
             wifiOnly = prefs[WIFI_ONLY] ?: false,
             autoReconnect = prefs[AUTO_RECONNECT] ?: true,
         )
@@ -60,6 +61,10 @@ class UserPreferencesRepository(context: Context) {
         store.edit { it[THEME] = mode.name }
     }
 
+    suspend fun setSnow(enabled: Boolean) {
+        store.edit { it[SNOW] = enabled }
+    }
+
     suspend fun setWifiOnly(enabled: Boolean) {
         store.edit { it[WIFI_ONLY] = enabled }
     }
@@ -74,6 +79,7 @@ class UserPreferencesRepository(context: Context) {
         val FAVORITES = stringSetPreferencesKey("favorites")
         val RECENT = stringPreferencesKey("recent")
         val THEME = stringPreferencesKey("theme_mode")
+        val SNOW = booleanPreferencesKey("christmas_snow")
         val WIFI_ONLY = booleanPreferencesKey("wifi_only")
         val AUTO_RECONNECT = booleanPreferencesKey("auto_reconnect")
     }

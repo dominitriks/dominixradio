@@ -24,7 +24,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AcUnit
 import androidx.compose.material.icons.rounded.BarChart
+import androidx.compose.material.icons.rounded.Grain
 import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.BatterySaver
 import androidx.compose.material.icons.rounded.BrightnessAuto
@@ -119,6 +121,12 @@ fun SettingsScreen(
             }
             ThemeOption("Автоматичен режим", Icons.Rounded.BrightnessAuto, settings.themeMode == ThemeMode.SYSTEM) {
                 vm.setThemeMode(ThemeMode.SYSTEM)
+            }
+            ThemeOption("Коледна тема", Icons.Rounded.AcUnit, settings.themeMode == ThemeMode.CHRISTMAS) {
+                vm.setThemeMode(ThemeMode.CHRISTMAS)
+            }
+            if (settings.themeMode == ThemeMode.CHRISTMAS) {
+                SwitchRow("Падащ сняг", "Снежинки върху екрана", Icons.Rounded.Grain, settings.snow, vm::setSnow)
             }
         }
 

@@ -100,6 +100,36 @@ private val LightColors = lightColorScheme(
     outlineVariant = Color(0xFFE0E1EC),
 )
 
+/** Night-forest green surfaces, Santa red accent, gold details. */
+private val ChristmasColors = darkColorScheme(
+    primary = Color(0xFFFF7A73),
+    onPrimary = Color(0xFF3A0505),
+    primaryContainer = Color(0xFF5C1A1C),
+    onPrimaryContainer = Color(0xFFFFDAD6),
+    secondary = Color(0xFF6FCF97),
+    onSecondary = Color(0xFF00391F),
+    secondaryContainer = Color(0xFF17452E),
+    onSecondaryContainer = Color(0xFFC8F2D8),
+    tertiary = Color(0xFFFFD166),
+    onTertiary = Color(0xFF3A2A00),
+    background = Color(0xFF07130E),
+    onBackground = Color(0xFFF3F5F0),
+    surface = Color(0xFF07130E),
+    onSurface = Color(0xFFF3F5F0),
+    surfaceVariant = Color(0xFF1A2E24),
+    onSurfaceVariant = Color(0xFFA9BAB0),
+    surfaceContainerLowest = Color(0xFF050E0A),
+    surfaceContainerLow = Color(0xFF0B1A13),
+    surfaceContainer = Color(0xFF10231A),
+    surfaceContainerHigh = Color(0xFF162B21),
+    surfaceContainerHighest = Color(0xFF1D3529),
+    outline = Color(0xFF3D5A4A),
+    outlineVariant = Color(0xFF234033),
+    error = Color(0xFFFF8A80),
+    errorContainer = Color(0xFF4A1518),
+    onErrorContainer = Color(0xFFFFDAD6),
+)
+
 /** Meanings that must not share one colour (each also has an icon / text, never colour alone). */
 @Immutable
 data class DominixColors(
@@ -112,6 +142,11 @@ data class DominixColors(
     /** Soft glow behind the artwork in the player. */
     val glowPrimary: Color,
     val glowSecondary: Color,
+    /** Gradient of the main Play button (white content ≥ 4.5:1 on both). */
+    val accentStart: Color = Brand.PurpleDeep,
+    val accentEnd: Color = Brand.BlueDeep,
+    /** Christmas theme: lights on the home screen and (optionally) snow. */
+    val festive: Boolean = false,
 )
 
 private val DarkExtra = DominixColors(
@@ -128,6 +163,17 @@ private val LightExtra = DominixColors(
     warning = Color(0xFF9A6200),
     glowPrimary = Color(0xFF6D3FE0),
     glowSecondary = Color(0xFF2F5BE0),
+)
+
+private val ChristmasExtra = DominixColors(
+    playing = Color(0xFFFFD166),
+    favorite = Color(0xFFFF7FA5),
+    warning = Color(0xFFFFC266),
+    glowPrimary = Color(0xFFC62828),
+    glowSecondary = Color(0xFF1B8A50),
+    accentStart = Color(0xFFD32F2F),
+    accentEnd = Color(0xFFA31621),
+    festive = true,
 )
 
 private val LocalDominixColors = staticCompositionLocalOf { DarkExtra }
@@ -202,7 +248,7 @@ fun genreColor(genre: String): Color = when (genre) {
 @Composable
 fun BGRadioTheme(themeMode: ThemeMode, content: @Composable () -> Unit) {
     val dark = when (themeMode) {
-        ThemeMode.DARK -> true
+        ThemeMode.DARK, ThemeMode.CHRISTMAS -> true
         ThemeMode.LIGHT -> false
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
@@ -216,9 +262,14 @@ fun BGRadioTheme(themeMode: ThemeMode, content: @Composable () -> Unit) {
             }
         }
     }
-    CompositionLocalProvider(LocalDominixColors provides if (dark) DarkExtra else LightExtra) {
+    val (scheme, extra) = when {
+        themeMode == ThemeMode.CHRISTMAS -> ChristmasColors to ChristmasExtra
+        dark -> DarkColors to DarkExtra
+        else -> LightColors to LightExtra
+    }
+    CompositionLocalProvider(LocalDominixColors provides extra) {
         MaterialTheme(
-            colorScheme = if (dark) DarkColors else LightColors,
+            colorScheme = scheme,
             typography = AppTypography,
             content = content,
         )
@@ -247,4 +298,6 @@ internal object Palette {
     val lightPlaying = LightExtra.playing
     val lightFavorite = LightExtra.favorite
     val lightWarning = LightExtra.warning
+    val christmas = ChristmasColors
+    val christmasExtra = ChristmasExtra
 }

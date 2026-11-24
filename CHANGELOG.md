@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.6.0] — 2026-11-24
+
+### Added
+- **Christmas theme** (Settings → Външен вид → Коледна тема): forest green, Santa red and gold, twinkling lights on the home screen and falling snow that can be switched off.
+
 ## [1.5.2] — 2026-10-12
 
 ### Added
